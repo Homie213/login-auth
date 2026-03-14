@@ -1,9 +1,4 @@
 {
-  "admin_auth": {
-    "username": "admin",
-    "password_hash": "361m2wh4EzXWlyLRw32fqNH00ZOFh8q5moCCseulMnY=",
-    "updated": "2026-03-14"
-  },
   "users": {
     "customer_demo": {
       "password_hash": "YxaFN/ej8L4JIpnWavB5apTLi1vjBpp3BCIDCsFqAwE=",
@@ -36,6 +31,6 @@
   "meta": {
     "schema_version": 3,
     "updated_at": "2026-03-14",
-    "note": "Default admin login is admin / change-me-now. Update the admin_auth section after first sign-in."
+    "note": "Public customer database feed."
   }
 }

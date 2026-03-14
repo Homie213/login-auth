@@ -39,7 +39,7 @@
         <div class="hero-actions">
           <button class="btn btn-primary" id="adminLoginBtn" type="button">Login</button>
         </div>
-        <div class="status-banner" id="loginStatus">Default first login is `admin / change-me-now`.</div>
+        <div class="status-banner" id="loginStatus">Default first login is `admin / change-me-now`. Admin credentials stay in this browser only.</div>
       </article>
     </section>
 
@@ -103,6 +103,7 @@
         <div class="hero-actions">
           <button class="btn btn-primary" id="updateAdminAuthBtn" type="button">Update Admin Login</button>
         </div>
+        <div class="status-banner warning">This login is no longer published in the public JSON feed. Changes stay on this device/browser.</div>
       </article>
 
       <article class="panel col-5">
@@ -254,10 +255,11 @@
 
   <script>
     const STORAGE_KEY = "herax-admin-local-draft";
+    const ADMIN_AUTH_STORAGE_KEY = "herax-private-admin-auth";
     const SESSION_KEY = "herax-admin-session";
     const KEY_FAMILIES = ["ARC", "NOVA", "RIFT", "VANTA", "ORBIT", "DELTA", "KRYPT", "AERO"];
+    const DEFAULT_ADMIN_AUTH = { username: "admin", password_hash: "361m2wh4EzXWlyLRw32fqNH00ZOFh8q5moCCseulMnY=", updated: "2026-03-14" };
     const seedState = {
-      admin_auth: { username: "admin", password_hash: "361m2wh4EzXWlyLRw32fqNH00ZOFh8q5moCCseulMnY=", updated: "2026-03-14" },
       users: {
         customer_demo: {
           password_hash: "YxaFN/ej8L4JIpnWavB5apTLi1vjBpp3BCIDCsFqAwE=",
@@ -283,6 +285,7 @@
     };
 
     let state = clone(seedState);
+    let adminAuth = loadPrivateAdminAuth();
     let latestKey = "";
 
     const els = {
@@ -344,7 +347,7 @@
       restoreLocalDraft();
       populateAdminForm();
       const session = sessionStorage.getItem(SESSION_KEY);
-      if (session && session === state.admin_auth.username) showApp();
+      if (session && session === adminAuth.username) showApp();
       else setLoginStatus("Enter admin credentials to continue.", "");
     }
 
@@ -356,7 +359,7 @@
         return;
       }
       const candidateHash = await sha256Base64(`${username}|${password}|HeraxAdminPortal`);
-      if (username !== state.admin_auth.username || candidateHash !== state.admin_auth.password_hash) {
+      if (username !== adminAuth.username || candidateHash !== adminAuth.password_hash) {
         setLoginStatus("Invalid admin credentials.", "error");
         return;
       }
@@ -384,12 +387,10 @@
         const response = await fetch("./database/herax_licenses.json", { cache: "no-store" });
         if (!response.ok) throw new Error(`Published JSON fetch failed with ${response.status}`);
         state = normalize(await response.json());
-        populateAdminForm();
         persistDraft();
         if (announce) syncState("Published JSON loaded.");
       } catch (error) {
         state = clone(seedState);
-        populateAdminForm();
         persistDraft();
         if (announce) syncState(`Using seed data because published JSON could not be loaded: ${error.message}`);
       }
@@ -400,7 +401,6 @@
       if (!raw) return;
       try {
         state = normalize(JSON.parse(raw));
-        populateAdminForm();
         syncState("Loaded local browser draft.");
       } catch (error) {
         setStatus(`Ignoring invalid local draft: ${error.message}`, "warning");
@@ -626,15 +626,16 @@
         setStatus("Enter a new admin password first.", "error");
         return;
       }
-      state.admin_auth = {
+      adminAuth = {
         username,
         password_hash: await sha256Base64(`${username}|${password}|HeraxAdminPortal`),
         updated: today()
       };
+      savePrivateAdminAuth();
       sessionStorage.setItem(SESSION_KEY, username);
       els.adminConfigPass.value = "";
       populateAdminForm();
-      setLoginStatus("Admin credentials updated. Use the new login next time.", "success");
+      setLoginStatus("Admin credentials updated on this browser.", "success");
       syncState("Admin login settings updated.");
     }
 
@@ -757,8 +758,22 @@
     }
 
     function populateAdminForm() {
-      els.adminConfigUser.value = state.admin_auth.username || "admin";
-      els.adminUsername.value = state.admin_auth.username || "admin";
+      els.adminConfigUser.value = adminAuth.username || "admin";
+      els.adminUsername.value = adminAuth.username || "admin";
+    }
+
+    function loadPrivateAdminAuth() {
+      const raw = localStorage.getItem(ADMIN_AUTH_STORAGE_KEY);
+      if (!raw) return clone(DEFAULT_ADMIN_AUTH);
+      try {
+        return { ...DEFAULT_ADMIN_AUTH, ...JSON.parse(raw) };
+      } catch (error) {
+        return clone(DEFAULT_ADMIN_AUTH);
+      }
+    }
+
+    function savePrivateAdminAuth() {
+      localStorage.setItem(ADMIN_AUTH_STORAGE_KEY, JSON.stringify(adminAuth));
     }
 
     function effectiveLicenseStatus(license) {
@@ -771,7 +786,6 @@
 
     function normalize(data) {
       return {
-        admin_auth: { ...seedState.admin_auth, ...(data?.admin_auth || {}) },
         users: data?.users || {},
         licenses: data?.licenses || {},
         stats: { ...seedState.stats, ...(data?.stats || {}) },

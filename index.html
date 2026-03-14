@@ -13,37 +13,53 @@
         <span class="brand-mark">HX</span>
         <span class="brand-copy">
           <strong>Herax.gg</strong>
-          <span>Single-repo customer and admin portal</span>
+          <span>Customer access portal</span>
         </span>
       </a>
       <div class="nav-links">
         <a href="customer.html">Customer Portal</a>
-        <a href="admin.html">Admin Console</a>
-        <a href="database/herax_licenses.json">Database Feed</a>
+        <a href="exe/README.md">Downloads</a>
       </div>
     </nav>
 
     <section class="hero-grid">
       <article class="hero-card">
         <span class="eyebrow">Premium Access Hub</span>
-        <h1 class="headline">One repo. One portal. One clean control flow.</h1>
-        <p class="lede">This build gives you a polished landing page, a customer-facing status portal, and an admin console that can manage users, reset passwords, generate non-fixed license keys, and save JSON changes locally or back to GitHub.</p>
+        <h1 class="headline">Fast customer access with a sharper, cleaner front end.</h1>
+        <p class="lede">The public side now stays focused on customers only: login checks, account status, license visibility, and access requests, all inside a tighter rectangular visual system.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="customer.html">Open Customer Portal</a>
-          <a class="btn btn-secondary" href="admin.html">Open Admin Console</a>
         </div>
         <div class="hero-metrics">
           <div class="metric">
-            <span>Repo Structure</span>
-            <strong>Root + JSON</strong>
+            <span>Access</span>
+            <strong>Customer First</strong>
           </div>
           <div class="metric">
-            <span>Admin Control</span>
-            <strong>Login + Reset</strong>
+            <span>UI Mood</span>
+            <strong>Rectangular Panels</strong>
           </div>
           <div class="metric">
             <span>Persistence</span>
-            <strong>Local + GitHub</strong>
+            <strong>Published JSON</strong>
+          </div>
+        </div>
+        <div class="rect-stage">
+          <div class="rect tall">
+            <span>Live View</span>
+            <strong>Account state, plan, expiry, and notes in one frame.</strong>
+          </div>
+          <div class="rect wide">
+            <span>Lookup</span>
+            <strong>Username + password check</strong>
+          </div>
+          <div class="rect">
+            <span>Keys</span>
+            <strong>Instant visibility</strong>
+          </div>
+          <div class="rect">
+            <span>Status</span>
+            <strong>Active, paused, expired</strong>
           </div>
         </div>
       </article>
@@ -60,19 +76,28 @@
         </article>
 
         <article class="surface">
-          <h3>Admin Flow</h3>
-          <p>Admins can sign in, create users, reset passwords, rename customers, generate keys that do not start with a fixed Herax prefix, and publish updated JSON to the same repo.</p>
-          <div class="chip-row">
-            <span class="chip">Admin login</span>
-            <span class="chip">Customer data</span>
-            <span class="chip">Repo save</span>
+          <h3>Rect Visual Layer</h3>
+          <p>Sharp rectangular blocks now break up the softer cards so the page feels more premium and less generic.</p>
+          <div class="rect-band">
+            <div class="rect">
+              <span>Grid</span>
+              <strong>Angular highlights</strong>
+            </div>
+            <div class="rect">
+              <span>Contrast</span>
+              <strong>Clear visual anchors</strong>
+            </div>
+            <div class="rect">
+              <span>Focus</span>
+              <strong>Public portal only</strong>
+            </div>
           </div>
         </article>
       </div>
     </section>
 
     <section class="dashboard-grid">
-      <article class="panel col-4">
+      <article class="panel col-6">
         <div class="panel-header">
           <div>
             <h2>Customer Portal</h2>
@@ -90,31 +115,13 @@
         </div>
       </article>
 
-      <article class="panel col-4">
-        <div class="panel-header">
-          <div>
-            <h2>Admin Console</h2>
-            <p class="panel-note">Front-end login gate plus actual GitHub token-based publish flow for database updates.</p>
-          </div>
-          <span class="badge">02</span>
-        </div>
-        <ul class="list">
-          <li>Create and manage customer profiles.</li>
-          <li>Reset passwords without storing raw passwords.</li>
-          <li>Generate flexible key formats with random or custom prefixes.</li>
-        </ul>
-        <div class="stack-actions">
-          <a class="btn btn-primary" href="admin.html">Go To Admin Page</a>
-        </div>
-      </article>
-
-      <article class="panel col-4">
+      <article class="panel col-6">
         <div class="panel-header">
           <div>
             <h2>Delivery Depot</h2>
             <p class="panel-note">The repo already includes an `exe/` folder so you can drop your shipped desktop package in one place.</p>
           </div>
-          <span class="badge">03</span>
+          <span class="badge">02</span>
         </div>
         <ul class="list">
           <li>Keep download assets inside `exe/`.</li>
@@ -130,7 +137,7 @@
         <div class="panel-header">
           <div>
             <h2>What Ships In This Repo</h2>
-            <p class="panel-note">This portal is designed to work without extra repos. The only publish requirement is GitHub Pages, and JSON updates can be saved with a GitHub token from the admin page.</p>
+            <p class="panel-note">This portal is designed to work without extra repos. The public side stays customer-facing, while the private control page can still publish JSON updates with a GitHub token.</p>
           </div>
         </div>
         <div class="stats-strip">
@@ -141,10 +148,6 @@
           <div class="stat-card">
             <span>Customer</span>
             <strong>`customer.html`</strong>
-          </div>
-          <div class="stat-card">
-            <span>Admin</span>
-            <strong>`admin.html`</strong>
           </div>
           <div class="stat-card">
             <span>Database</span>

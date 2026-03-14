@@ -19,7 +19,6 @@
       <div class="nav-links">
         <a href="index.html">Home</a>
         <a href="customer.html">Customer Portal</a>
-        <a href="admin.html">Admin Console</a>
       </div>
     </nav>
 
@@ -27,7 +26,7 @@
       <article class="hero-card">
         <span class="eyebrow">Customer Access</span>
         <h1 class="headline">Check account status and active licenses in one place.</h1>
-        <p class="lede">Existing customers can sign in to view account details, active or expired licenses, and internal notes published by the admin. New customers can generate a clean access request to send manually.</p>
+        <p class="lede">Existing customers can sign in to view account details, active or expired licenses, and support notes. New customers can generate a clean access request to send manually.</p>
         <div class="hero-metrics">
           <div class="metric">
             <span>Sign In</span>
@@ -42,11 +41,29 @@
             <strong>Request Access</strong>
           </div>
         </div>
+        <div class="rect-stage">
+          <div class="rect tall">
+            <span>Customer Board</span>
+            <strong>One rectangular snapshot for status, keys, expiry, and notes.</strong>
+          </div>
+          <div class="rect">
+            <span>Login</span>
+            <strong>Fast account check</strong>
+          </div>
+          <div class="rect">
+            <span>Plans</span>
+            <strong>Visible instantly</strong>
+          </div>
+          <div class="rect wide">
+            <span>Request</span>
+            <strong>Copy access request in one click</strong>
+          </div>
+        </div>
       </article>
 
       <article class="surface">
         <h3>How This Works</h3>
-        <p>The customer page reads the published JSON database. It does not directly rewrite repository files from the public side, so new access requests are prepared as a message that you can copy and send to the admin.</p>
+        <p>The customer page reads the published JSON database. It does not directly rewrite repository files from the public side, so new access requests are prepared as a message that you can copy and send privately.</p>
         <div class="chip-row">
           <span class="chip">Published JSON</span>
           <span class="chip">Hash-based login</span>
@@ -60,7 +77,7 @@
         <div class="panel-header">
           <div>
             <h2>Customer Login</h2>
-            <p class="panel-note">Use the same username and password created in the admin console.</p>
+            <p class="panel-note">Use the same username and password assigned to your account.</p>
           </div>
         </div>
         <div class="field-grid">
@@ -105,7 +122,7 @@
             </select>
           </div>
           <div class="field">
-            <label for="requestNote">Note for admin</label>
+            <label for="requestNote">Private note</label>
             <textarea id="requestNote" placeholder="Telegram, payment proof reference, special notes, etc."></textarea>
           </div>
         </div>
@@ -151,10 +168,6 @@
 
   <script>
     const customerSeed = {
-      admin_auth: {
-        username: "admin",
-        password_hash: "361m2wh4EzXWlyLRw32fqNH00ZOFh8q5moCCseulMnY="
-      },
       users: {},
       licenses: {},
       stats: {
@@ -266,7 +279,7 @@
 
       try {
         await navigator.clipboard.writeText(message);
-        setRequestStatus("Access request copied. Send it to the admin for account creation.", "success");
+        setRequestStatus("Access request copied. Send it privately for account creation.", "success");
       } catch (error) {
         setRequestStatus(`Copy failed. Request text:\n${message}`, "warning");
       }
@@ -323,10 +336,6 @@
 
     function normalize(data) {
       return {
-        admin_auth: {
-          ...customerSeed.admin_auth,
-          ...(data?.admin_auth || {})
-        },
         users: data?.users || {},
         licenses: data?.licenses || {},
         stats: {
