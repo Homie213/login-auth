@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Herax.gg Customer Portal</title>
+  <title>Enchaced Herax.gg Customer Portal</title>
   <link rel="stylesheet" href="css/site.css" />
 </head>
 <body>
@@ -12,7 +12,7 @@
       <a class="brand" href="index.html">
         <span class="brand-mark">HX</span>
         <span class="brand-copy">
-          <strong>Herax.gg</strong>
+          <strong>Enchaced Herax.gg</strong>
           <span>Customer access and license status</span>
         </span>
       </a>
@@ -297,7 +297,7 @@
       </article>
     </section>
 
-    <p class="footer-note">Customer-facing domain target: `https://herax.com/customer.html`</p>
+    <p class="footer-note">Live public link: `https://homie213.github.io/login-auth/customer.html`</p>
   </div>
 
   <script>
@@ -476,7 +476,7 @@
       }
 
       const message = [
-        "New Herax.gg access request",
+        "New Enchaced Herax.gg access request",
         `Username: ${desiredUser}`,
         `Plan: ${els.requestPlan.value}`,
         `Date: ${today()}`,
@@ -519,7 +519,7 @@
 
       const passwordHash = await sha256Base64(`${username}|${password}|HeraxLicensing`);
       const message = [
-        "New Herax customer registration",
+        "New Enchaced Herax.gg customer registration",
         `Username: ${username}`,
         `Plan: ${plan}`,
         `Contact: ${contact || "No contact shared"}`,
@@ -667,7 +667,7 @@
 
       const nextHash = await sha256Base64(`${currentSession.username}|${nextPassword}|HeraxLicensing`);
       const request = [
-        "Herax customer password change request",
+        "Enchaced Herax.gg customer password change request",
         `Username: ${currentSession.username}`,
         `Requested at: ${today()}`,
         `Display tag: ${displayTag || "No display tag"}`,
