@@ -1,13 +1,41 @@
 {
-  "users": {},
-  "licenses": {},
+  "admin_auth": {
+    "username": "admin",
+    "password_hash": "361m2wh4EzXWlyLRw32fqNH00ZOFh8q5moCCseulMnY=",
+    "updated": "2026-03-14"
+  },
+  "users": {
+    "customer_demo": {
+      "password_hash": "YxaFN/ej8L4JIpnWavB5apTLi1vjBpp3BCIDCsFqAwE=",
+      "role": "user",
+      "created": "2026-03-14",
+      "status": "active",
+      "notes": "Demo profile for first-run testing."
+    }
+  },
+  "licenses": {
+    "NOVA-7XK2P9-Q4M8RD": {
+      "username": "customer_demo",
+      "plan": "30days",
+      "status": "active",
+      "expiry": "2026-04-13",
+      "created": "2026-03-14",
+      "revenue": 500,
+      "notes": "Demo active license"
+    }
+  },
   "stats": {
-    "total_users": 0,
-    "total_keys": 0,
-    "active_keys": 0,
+    "total_users": 1,
+    "total_keys": 1,
+    "active_keys": 1,
     "paused_keys": 0,
     "revoked_keys": 0,
     "expired_keys": 0,
-    "revenue": 0
+    "revenue": 500
+  },
+  "meta": {
+    "schema_version": 3,
+    "updated_at": "2026-03-14",
+    "note": "Default admin login is admin / change-me-now. Update the admin_auth section after first sign-in."
   }
 }

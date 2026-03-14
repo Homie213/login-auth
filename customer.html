@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Herax.gg Customer Portal</title>
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="site-nav">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">HX</span>
+        <span class="brand-copy">
+          <strong>Herax.gg</strong>
+          <span>Customer access and license status</span>
+        </span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="customer.html">Customer Portal</a>
+        <a href="admin.html">Admin Console</a>
+      </div>
+    </nav>
+
+    <section class="hero-grid">
+      <article class="hero-card">
+        <span class="eyebrow">Customer Access</span>
+        <h1 class="headline">Check account status and active licenses in one place.</h1>
+        <p class="lede">Existing customers can sign in to view account details, active or expired licenses, and internal notes published by the admin. New customers can generate a clean access request to send manually.</p>
+        <div class="hero-metrics">
+          <div class="metric">
+            <span>Sign In</span>
+            <strong>Username + Password</strong>
+          </div>
+          <div class="metric">
+            <span>License View</span>
+            <strong>Status + Expiry</strong>
+          </div>
+          <div class="metric">
+            <span>Fallback</span>
+            <strong>Request Access</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="surface">
+        <h3>How This Works</h3>
+        <p>The customer page reads the published JSON database. It does not directly rewrite repository files from the public side, so new access requests are prepared as a message that you can copy and send to the admin.</p>
+        <div class="chip-row">
+          <span class="chip">Published JSON</span>
+          <span class="chip">Hash-based login</span>
+          <span class="chip">Manual approval path</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="two-column">
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Customer Login</h2>
+            <p class="panel-note">Use the same username and password created in the admin console.</p>
+          </div>
+        </div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="customerUsername">Username</label>
+            <input id="customerUsername" placeholder="customer_demo" />
+          </div>
+          <div class="field">
+            <label for="customerPassword">Password</label>
+            <input id="customerPassword" type="password" placeholder="Enter password" />
+          </div>
+          <div class="field">
+            <label for="customerLicenseKey">License key (optional)</label>
+            <input id="customerLicenseKey" placeholder="Paste a specific key to check" />
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="customerLoginBtn" type="button">Check Account</button>
+          <button class="btn btn-secondary" id="customerReloadBtn" type="button">Reload Published Data</button>
+        </div>
+        <div class="status-banner" id="customerStatus">Ready.</div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Need Access?</h2>
+            <p class="panel-note">Static GitHub Pages cannot accept unauthenticated writes to the repo JSON, so new access requests are prepared as a shareable message for manual approval.</p>
+          </div>
+        </div>
+        <div class="field-grid">
+          <div class="field">
+            <label for="requestName">Desired username</label>
+            <input id="requestName" placeholder="new_customer" />
+          </div>
+          <div class="field">
+            <label for="requestPlan">Requested plan</label>
+            <select id="requestPlan">
+              <option value="30days">30 Days</option>
+              <option value="lifetime">Lifetime</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="requestNote">Note for admin</label>
+            <textarea id="requestNote" placeholder="Telegram, payment proof reference, special notes, etc."></textarea>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="copyRequestBtn" type="button">Copy Access Request</button>
+        </div>
+        <div class="status-banner" id="requestStatus">Use this if the account does not exist yet.</div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel col-12">
+        <div class="panel-header">
+          <div>
+            <h2>Account Snapshot</h2>
+            <p class="panel-note">Appears after a successful login.</p>
+          </div>
+        </div>
+        <div class="stat-grid" id="customerSummary"></div>
+        <div class="divider"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Plan</th>
+                <th>Status</th>
+                <th>Expiry</th>
+                <th>Created</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="customerLicenseTable">
+              <tr>
+                <td colspan="6">No account checked yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const customerSeed = {
+      admin_auth: {
+        username: "admin",
+        password_hash: "361m2wh4EzXWlyLRw32fqNH00ZOFh8q5moCCseulMnY="
+      },
+      users: {},
+      licenses: {},
+      stats: {
+        total_users: 0,
+        total_keys: 0,
+        active_keys: 0,
+        paused_keys: 0,
+        revoked_keys: 0,
+        expired_keys: 0,
+        revenue: 0
+      },
+      meta: {
+        schema_version: 3,
+        updated_at: "2026-03-14"
+      }
+    };
+
+    let customerState = clone(customerSeed);
+
+    const els = {
+      username: document.getElementById("customerUsername"),
+      password: document.getElementById("customerPassword"),
+      licenseKey: document.getElementById("customerLicenseKey"),
+      status: document.getElementById("customerStatus"),
+      summary: document.getElementById("customerSummary"),
+      table: document.getElementById("customerLicenseTable"),
+      requestName: document.getElementById("requestName"),
+      requestPlan: document.getElementById("requestPlan"),
+      requestNote: document.getElementById("requestNote"),
+      requestStatus: document.getElementById("requestStatus")
+    };
+
+    document.getElementById("customerLoginBtn").addEventListener("click", loginCustomer);
+    document.getElementById("customerReloadBtn").addEventListener("click", loadPublishedData);
+    document.getElementById("copyRequestBtn").addEventListener("click", copyAccessRequest);
+
+    loadPublishedData();
+
+    async function loadPublishedData() {
+      try {
+        const response = await fetch("./database/herax_licenses.json", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`Database fetch failed with ${response.status}`);
+        }
+        customerState = normalize(await response.json());
+        setStatus("Published customer data loaded.", "success");
+      } catch (error) {
+        customerState = clone(customerSeed);
+        setStatus(`Using fallback data: ${error.message}`, "warning");
+      }
+    }
+
+    async function loginCustomer() {
+      const username = els.username.value.trim();
+      const password = els.password.value;
+      const specificKey = els.licenseKey.value.trim();
+
+      if (!username || !password) {
+        setStatus("Username and password are required.", "error");
+        return;
+      }
+
+      const user = customerState.users[username];
+      if (!user) {
+        setStatus("Account not found. Use the access request form if you are new.", "error");
+        renderCustomer([], null, username);
+        return;
+      }
+
+      const passwordHash = await sha256Base64(`${username}|${password}|HeraxLicensing`);
+      if (passwordHash !== user.password_hash) {
+        setStatus("Invalid password for this account.", "error");
+        renderCustomer([], user, username);
+        return;
+      }
+
+      let licenses = Object.entries(customerState.licenses || {})
+        .filter(([, license]) => license.username === username)
+        .map(([key, license]) => ({ key, ...license }));
+
+      if (specificKey) {
+        licenses = licenses.filter((license) => license.key === specificKey);
+        if (!licenses.length) {
+          setStatus("That license key does not belong to the current user.", "error");
+          renderCustomer([], user, username);
+          return;
+        }
+      }
+
+      licenses.sort((a, b) => String(b.created || "").localeCompare(String(a.created || "")));
+      renderCustomer(licenses, user, username);
+      setStatus(`Welcome ${username}. ${licenses.length} license record(s) matched.`, "success");
+    }
+
+    async function copyAccessRequest() {
+      const desiredUser = els.requestName.value.trim();
+      if (!desiredUser) {
+        setRequestStatus("Enter a desired username first.", "error");
+        return;
+      }
+
+      const message = [
+        "New Herax.gg access request",
+        `Username: ${desiredUser}`,
+        `Plan: ${els.requestPlan.value}`,
+        `Date: ${today()}`,
+        `Notes: ${els.requestNote.value.trim() || "No notes added"}`
+      ].join("\n");
+
+      try {
+        await navigator.clipboard.writeText(message);
+        setRequestStatus("Access request copied. Send it to the admin for account creation.", "success");
+      } catch (error) {
+        setRequestStatus(`Copy failed. Request text:\n${message}`, "warning");
+      }
+    }
+
+    function renderCustomer(licenses, user, username) {
+      const activeCount = licenses.filter((license) => effectiveStatus(license) === "active").length;
+      const latestExpiry = licenses
+        .map((license) => license.expiry)
+        .filter(Boolean)
+        .sort()
+        .slice(-1)[0] || "n/a";
+
+      els.summary.innerHTML = user ? [
+        stat("Customer", username),
+        stat("Role", user.role || "user"),
+        stat("Profile Status", user.status || "active"),
+        stat("Matched Keys", String(licenses.length)),
+        stat("Active Keys", String(activeCount)),
+        stat("Latest Expiry", latestExpiry === "lifetime" ? "Lifetime" : latestExpiry)
+      ].join("") : "";
+
+      const rows = licenses.map((license) => {
+        const status = effectiveStatus(license);
+        const expiryLabel = license.expiry === "lifetime" ? "Lifetime" : (license.expiry || "-");
+        return `
+          <tr>
+            <td class="mono">${license.key}</td>
+            <td>${license.plan || "-"}</td>
+            <td><span class="pill ${status}">${status}</span></td>
+            <td>${expiryLabel}</td>
+            <td>${license.created || "-"}</td>
+            <td>${license.notes || "-"}</td>
+          </tr>
+        `;
+      }).join("");
+
+      els.table.innerHTML = rows || `<tr><td colspan="6">No license records to show.</td></tr>`;
+    }
+
+    function effectiveStatus(license) {
+      if (!license) return "revoked";
+      if (license.status === "revoked") return "revoked";
+      if (license.status === "paused") return "paused";
+      if (license.expiry !== "lifetime" && license.expiry && license.expiry < today()) return "expired";
+      return "active";
+    }
+
+    async function sha256Base64(value) {
+      const bytes = new TextEncoder().encode(value);
+      const hash = await crypto.subtle.digest("SHA-256", bytes);
+      return btoa(String.fromCharCode(...new Uint8Array(hash)));
+    }
+
+    function normalize(data) {
+      return {
+        admin_auth: {
+          ...customerSeed.admin_auth,
+          ...(data?.admin_auth || {})
+        },
+        users: data?.users || {},
+        licenses: data?.licenses || {},
+        stats: {
+          ...customerSeed.stats,
+          ...(data?.stats || {})
+        },
+        meta: {
+          ...customerSeed.meta,
+          ...(data?.meta || {})
+        }
+      };
+    }
+
+    function stat(label, value) {
+      return `
+        <div class="stat-card">
+          <span>${label}</span>
+          <strong>${value}</strong>
+        </div>
+      `;
+    }
+
+    function setStatus(message, tone) {
+      els.status.className = `status-banner${tone ? ` ${tone}` : ""}`;
+      els.status.textContent = message;
+    }
+
+    function setRequestStatus(message, tone) {
+      els.requestStatus.className = `status-banner${tone ? ` ${tone}` : ""}`;
+      els.requestStatus.textContent = message;
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+  </script>
+</body>
+</html>

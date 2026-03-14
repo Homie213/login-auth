@@ -1,12 +1,15 @@
 # login-auth
 
-Static auth and licensing repo for a desktop app.
+Single-repo customer and admin portal for GitHub Pages.
 
 ## Repo layout
 
-- `website/index.html`: admin dashboard
-- `database/herax_licenses.json`: license data seed structure
-- `exe/`: place the shipped Windows app here
+- `index.html`: landing page
+- `customer.html`: customer login and access request page
+- `admin.html`: admin login, customer management, password reset, and license controls
+- `database/herax_licenses.json`: shared JSON data
+- `exe/`: place shipped desktop packages here
+- `website/index.html`: backward-compatible redirect to `../admin.html`
 
 ## GitHub Pages
 
@@ -15,5 +18,9 @@ Enable Pages from:
 - Branch: `main`
 - Folder: `/root`
 
-The root `index.html` redirects to `website/` so the live URL opens the dashboard.
-Herax Premium User Management &amp; Authentication System
+## Notes
+
+- The customer page reads the published JSON file.
+- The admin page caches edits in browser local storage automatically.
+- Use the GitHub token fields in `admin.html` when you want to write changes back to `database/herax_licenses.json`.
+- Default seed admin login: `admin / change-me-now`.

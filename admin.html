@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Herax.gg Admin Console</title>
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="site-nav">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">HX</span>
+        <span class="brand-copy">
+          <strong>Herax.gg</strong>
+          <span>Admin control</span>
+        </span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="customer.html">Customer</a>
+        <a href="admin.html">Admin</a>
+      </div>
+    </nav>
+
+    <section class="login-shell" id="loginShell">
+      <article class="panel login-card">
+        <h2>Admin Login</h2>
+        <div class="field-grid">
+          <div class="field">
+            <label for="adminUsername">Admin username</label>
+            <input id="adminUsername" placeholder="admin" />
+          </div>
+          <div class="field">
+            <label for="adminPassword">Admin password</label>
+            <input id="adminPassword" type="password" placeholder="Enter admin password" />
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="adminLoginBtn" type="button">Login</button>
+        </div>
+        <div class="status-banner" id="loginStatus">Default first login is `admin / change-me-now`.</div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid hide" id="adminApp">
+      <article class="panel col-12">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Admin Console</span>
+            <h2>Customer data, password reset, and license control</h2>
+          </div>
+          <button class="btn btn-secondary" id="logoutBtn" type="button">Logout</button>
+        </div>
+        <div class="stats-strip" id="statsGrid"></div>
+        <div class="status-banner" id="adminStatus">Ready.</div>
+      </article>
+
+      <article class="panel col-6">
+        <h2>Repo Save</h2>
+        <div class="field-grid two">
+          <div class="field">
+            <label for="repoOwner">Owner</label>
+            <input id="repoOwner" placeholder="your-user" />
+          </div>
+          <div class="field">
+            <label for="repoName">Repo</label>
+            <input id="repoName" placeholder="login-auth" />
+          </div>
+          <div class="field">
+            <label for="repoBranch">Branch</label>
+            <input id="repoBranch" value="main" />
+          </div>
+          <div class="field">
+            <label for="repoPath">File path</label>
+            <input id="repoPath" value="database/herax_licenses.json" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="githubToken">GitHub token</label>
+          <input id="githubToken" type="password" placeholder="Token with repo write access" />
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-secondary" id="loadPublishedBtn" type="button">Load Published</button>
+          <button class="btn btn-secondary" id="copyJsonBtn" type="button">Copy JSON</button>
+          <button class="btn btn-secondary" id="downloadJsonBtn" type="button">Download JSON</button>
+          <button class="btn btn-primary" id="saveRepoBtn" type="button">Save To GitHub</button>
+        </div>
+      </article>
+
+      <article class="panel col-6">
+        <h2>Admin Identity</h2>
+        <div class="field-grid two">
+          <div class="field">
+            <label for="adminConfigUser">Admin username</label>
+            <input id="adminConfigUser" />
+          </div>
+          <div class="field">
+            <label for="adminConfigPass">New admin password</label>
+            <input id="adminConfigPass" type="password" placeholder="Set new password" />
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="updateAdminAuthBtn" type="button">Update Admin Login</button>
+        </div>
+      </article>
+
+      <article class="panel col-5">
+        <h2>Create Customer</h2>
+        <div class="field-grid two">
+          <div class="field">
+            <label for="newUsername">Username</label>
+            <input id="newUsername" placeholder="new_customer" />
+          </div>
+          <div class="field">
+            <label for="newPassword">Password</label>
+            <input id="newPassword" type="password" placeholder="Create password" />
+          </div>
+          <div class="field">
+            <label for="newRole">Role</label>
+            <select id="newRole">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="newStatus">Profile status</label>
+            <select id="newStatus">
+              <option value="active">Active</option>
+              <option value="pending_reset">Pending Reset</option>
+              <option value="review">Review</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="newUserNote">Internal note</label>
+          <textarea id="newUserNote" placeholder="Optional note"></textarea>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="createUserBtn" type="button">Save Customer</button>
+        </div>
+      </article>
+
+      <article class="panel col-7">
+        <h2>License Forge</h2>
+        <div class="field-grid three">
+          <div class="field">
+            <label for="licenseUsername">Username</label>
+            <input id="licenseUsername" placeholder="customer_demo" />
+          </div>
+          <div class="field">
+            <label for="licensePlan">Plan</label>
+            <select id="licensePlan">
+              <option value="30days">30 Days</option>
+              <option value="lifetime">Lifetime</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="licenseRevenue">Revenue</label>
+            <input id="licenseRevenue" type="number" min="0" value="500" />
+          </div>
+          <div class="field">
+            <label for="keyMode">Key mode</label>
+            <select id="keyMode">
+              <option value="random">Random Prefix</option>
+              <option value="custom">Custom Prefix</option>
+              <option value="none">No Prefix</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="keyCustomPrefix">Custom prefix</label>
+            <input id="keyCustomPrefix" placeholder="NOVA" />
+          </div>
+          <div class="field">
+            <label for="licenseExpiry">Expiry date</label>
+            <input id="licenseExpiry" type="date" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="licenseNotes">License note</label>
+          <textarea id="licenseNotes" placeholder="Optional note"></textarea>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="generateLicenseBtn" type="button">Generate License</button>
+          <button class="btn btn-secondary" id="copyLatestKeyBtn" type="button">Copy Latest Key</button>
+        </div>
+        <div class="status-banner" id="latestKeyBox">No key generated yet.</div>
+      </article>
+
+      <article class="table-panel col-12">
+        <div class="table-head">
+          <div><h2>Customers</h2></div>
+          <div class="field" style="min-width: 240px;">
+            <label for="userSearch">Search</label>
+            <input id="userSearch" placeholder="username, role, status" />
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="table-panel col-12">
+        <div class="table-head">
+          <div><h2>Licenses</h2></div>
+          <div class="field" style="min-width: 240px;">
+            <label for="licenseSearch">Search</label>
+            <input id="licenseSearch" placeholder="key, user, status" />
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>User</th>
+                <th>Plan</th>
+                <th>Status</th>
+                <th>Expiry</th>
+                <th>Created</th>
+                <th>Revenue</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="licenseTable"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel col-12">
+        <div class="panel-header">
+          <div><h2>JSON Preview</h2></div>
+          <button class="btn btn-secondary" id="importPreviewBtn" type="button">Import Preview</button>
+        </div>
+        <div class="field">
+          <textarea id="jsonPreview" spellcheck="false"></textarea>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "herax-admin-local-draft";
+    const SESSION_KEY = "herax-admin-session";
+    const KEY_FAMILIES = ["ARC", "NOVA", "RIFT", "VANTA", "ORBIT", "DELTA", "KRYPT", "AERO"];
+    const seedState = {
+      admin_auth: { username: "admin", password_hash: "361m2wh4EzXWlyLRw32fqNH00ZOFh8q5moCCseulMnY=", updated: "2026-03-14" },
+      users: {
+        customer_demo: {
+          password_hash: "YxaFN/ej8L4JIpnWavB5apTLi1vjBpp3BCIDCsFqAwE=",
+          role: "user",
+          created: "2026-03-14",
+          status: "active",
+          notes: "Demo profile for first-run testing."
+        }
+      },
+      licenses: {
+        "NOVA-7XK2P9-Q4M8RD": {
+          username: "customer_demo",
+          plan: "30days",
+          status: "active",
+          expiry: "2026-04-13",
+          created: "2026-03-14",
+          revenue: 500,
+          notes: "Demo active license"
+        }
+      },
+      stats: { total_users: 1, total_keys: 1, active_keys: 1, paused_keys: 0, revoked_keys: 0, expired_keys: 0, revenue: 500 },
+      meta: { schema_version: 3, updated_at: "2026-03-14", note: "Local draft is saved in the browser. Use Save To GitHub to publish changes." }
+    };
+
+    let state = clone(seedState);
+    let latestKey = "";
+
+    const els = {
+      loginShell: document.getElementById("loginShell"),
+      adminApp: document.getElementById("adminApp"),
+      loginStatus: document.getElementById("loginStatus"),
+      adminStatus: document.getElementById("adminStatus"),
+      adminUsername: document.getElementById("adminUsername"),
+      adminPassword: document.getElementById("adminPassword"),
+      adminConfigUser: document.getElementById("adminConfigUser"),
+      adminConfigPass: document.getElementById("adminConfigPass"),
+      statsGrid: document.getElementById("statsGrid"),
+      repoOwner: document.getElementById("repoOwner"),
+      repoName: document.getElementById("repoName"),
+      repoBranch: document.getElementById("repoBranch"),
+      repoPath: document.getElementById("repoPath"),
+      githubToken: document.getElementById("githubToken"),
+      newUsername: document.getElementById("newUsername"),
+      newPassword: document.getElementById("newPassword"),
+      newRole: document.getElementById("newRole"),
+      newStatus: document.getElementById("newStatus"),
+      newUserNote: document.getElementById("newUserNote"),
+      licenseUsername: document.getElementById("licenseUsername"),
+      licensePlan: document.getElementById("licensePlan"),
+      licenseRevenue: document.getElementById("licenseRevenue"),
+      keyMode: document.getElementById("keyMode"),
+      keyCustomPrefix: document.getElementById("keyCustomPrefix"),
+      licenseExpiry: document.getElementById("licenseExpiry"),
+      licenseNotes: document.getElementById("licenseNotes"),
+      latestKeyBox: document.getElementById("latestKeyBox"),
+      userSearch: document.getElementById("userSearch"),
+      licenseSearch: document.getElementById("licenseSearch"),
+      userTable: document.getElementById("userTable"),
+      licenseTable: document.getElementById("licenseTable"),
+      jsonPreview: document.getElementById("jsonPreview")
+    };
+
+    document.getElementById("adminLoginBtn").addEventListener("click", adminLogin);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+    document.getElementById("createUserBtn").addEventListener("click", createUser);
+    document.getElementById("generateLicenseBtn").addEventListener("click", generateLicense);
+    document.getElementById("copyLatestKeyBtn").addEventListener("click", copyLatestKey);
+    document.getElementById("loadPublishedBtn").addEventListener("click", () => loadPublishedData(true));
+    document.getElementById("copyJsonBtn").addEventListener("click", copyJson);
+    document.getElementById("downloadJsonBtn").addEventListener("click", downloadJson);
+    document.getElementById("saveRepoBtn").addEventListener("click", saveToRepo);
+    document.getElementById("updateAdminAuthBtn").addEventListener("click", updateAdminAuth);
+    document.getElementById("importPreviewBtn").addEventListener("click", importPreview);
+    els.userSearch.addEventListener("input", renderUsers);
+    els.licenseSearch.addEventListener("input", renderLicenses);
+    els.licensePlan.addEventListener("change", setDefaultExpiry);
+
+    inferRepoDefaults();
+    setDefaultExpiry();
+    boot();
+
+    async function boot() {
+      await loadPublishedData(false);
+      restoreLocalDraft();
+      populateAdminForm();
+      const session = sessionStorage.getItem(SESSION_KEY);
+      if (session && session === state.admin_auth.username) showApp();
+      else setLoginStatus("Enter admin credentials to continue.", "");
+    }
+
+    async function adminLogin() {
+      const username = els.adminUsername.value.trim();
+      const password = els.adminPassword.value;
+      if (!username || !password) {
+        setLoginStatus("Admin username and password are required.", "error");
+        return;
+      }
+      const candidateHash = await sha256Base64(`${username}|${password}|HeraxAdminPortal`);
+      if (username !== state.admin_auth.username || candidateHash !== state.admin_auth.password_hash) {
+        setLoginStatus("Invalid admin credentials.", "error");
+        return;
+      }
+      sessionStorage.setItem(SESSION_KEY, username);
+      showApp();
+      setStatus("Admin session unlocked.", "success");
+    }
+
+    function showApp() {
+      els.loginShell.classList.add("hide");
+      els.adminApp.classList.remove("hide");
+      syncState("Admin console ready.");
+    }
+
+    function logout() {
+      sessionStorage.removeItem(SESSION_KEY);
+      els.adminPassword.value = "";
+      els.loginShell.classList.remove("hide");
+      els.adminApp.classList.add("hide");
+      setLoginStatus("Logged out.", "warning");
+    }
+
+    async function loadPublishedData(announce) {
+      try {
+        const response = await fetch("./database/herax_licenses.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`Published JSON fetch failed with ${response.status}`);
+        state = normalize(await response.json());
+        populateAdminForm();
+        persistDraft();
+        if (announce) syncState("Published JSON loaded.");
+      } catch (error) {
+        state = clone(seedState);
+        populateAdminForm();
+        persistDraft();
+        if (announce) syncState(`Using seed data because published JSON could not be loaded: ${error.message}`);
+      }
+    }
+
+    function restoreLocalDraft() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        state = normalize(JSON.parse(raw));
+        populateAdminForm();
+        syncState("Loaded local browser draft.");
+      } catch (error) {
+        setStatus(`Ignoring invalid local draft: ${error.message}`, "warning");
+      }
+    }
+
+    async function createUser() {
+      const username = sanitizeUsername(els.newUsername.value);
+      const password = els.newPassword.value;
+      if (!username || !password) {
+        setStatus("Username and password are required.", "error");
+        return;
+      }
+      if (state.users[username]) {
+        setStatus("That customer username already exists.", "error");
+        return;
+      }
+      state.users[username] = {
+        password_hash: await sha256Base64(`${username}|${password}|HeraxLicensing`),
+        role: els.newRole.value,
+        created: today(),
+        status: els.newStatus.value,
+        notes: els.newUserNote.value.trim()
+      };
+      els.newUsername.value = "";
+      els.newPassword.value = "";
+      els.newUserNote.value = "";
+      els.licenseUsername.value = username;
+      syncState(`Customer ${username} saved.`);
+    }
+
+    function renderUsers() {
+      const query = els.userSearch.value.trim().toLowerCase();
+      const rows = Object.entries(state.users || {})
+        .filter(([username, user]) => !query || [username, user.role, user.status, user.notes].join(" ").toLowerCase().includes(query))
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([username, user]) => `
+          <tr>
+            <td class="mono">${username}</td>
+            <td>${user.role || "user"}</td>
+            <td>${user.status || "active"}</td>
+            <td>${user.created || "-"}</td>
+            <td>${user.notes || "-"}</td>
+            <td>
+              <div class="toolbar">
+                <button class="button-secondary btn" type="button" onclick="renameUser('${escapeSingleQuotes(username)}')">Rename</button>
+                <button class="button-warning btn" type="button" onclick="resetPasswordFor('${escapeSingleQuotes(username)}')">Reset Pass</button>
+                <button class="button-danger btn" type="button" onclick="deleteUser('${escapeSingleQuotes(username)}')">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `).join("");
+      els.userTable.innerHTML = rows || `<tr><td colspan="6">No customers matched this filter.</td></tr>`;
+    }
+
+    async function resetPasswordFor(username) {
+      const nextPassword = window.prompt(`New password for ${username}:`);
+      if (!nextPassword) return;
+      if (!state.users[username]) {
+        setStatus("Customer not found.", "error");
+        return;
+      }
+      state.users[username].password_hash = await sha256Base64(`${username}|${nextPassword}|HeraxLicensing`);
+      state.users[username].status = "active";
+      syncState(`Password reset for ${username}.`);
+    }
+
+    function renameUser(username) {
+      const nextUsername = sanitizeUsername(window.prompt("Rename customer to:", username) || "");
+      if (!nextUsername || nextUsername === username) return;
+      if (state.users[nextUsername]) {
+        setStatus("Target username already exists.", "error");
+        return;
+      }
+      state.users[nextUsername] = state.users[username];
+      delete state.users[username];
+      for (const license of Object.values(state.licenses || {})) {
+        if (license.username === username) license.username = nextUsername;
+      }
+      syncState(`Customer ${username} renamed to ${nextUsername}.`);
+    }
+
+    function deleteUser(username) {
+      if (!window.confirm(`Delete ${username} and all linked licenses?`)) return;
+      delete state.users[username];
+      for (const key of Object.keys(state.licenses || {})) {
+        if (state.licenses[key].username === username) delete state.licenses[key];
+      }
+      syncState(`Customer ${username} deleted.`);
+    }
+
+    function generateLicense() {
+      const username = sanitizeUsername(els.licenseUsername.value);
+      if (!username || !state.users[username]) {
+        setStatus("Create or select a valid customer before generating a license.", "error");
+        return;
+      }
+      const plan = els.licensePlan.value;
+      const expiry = plan === "lifetime" ? "lifetime" : (els.licenseExpiry.value || autoExpiry(plan));
+      const key = issueUniqueKey();
+      state.licenses[key] = {
+        username,
+        plan,
+        status: "active",
+        expiry,
+        created: today(),
+        revenue: Number(els.licenseRevenue.value || 0),
+        notes: els.licenseNotes.value.trim()
+      };
+      latestKey = key;
+      els.latestKeyBox.textContent = `Latest key: ${key}`;
+      els.licenseNotes.value = "";
+      syncState(`License ${key} created for ${username}.`);
+    }
+
+    function issueUniqueKey() {
+      let key = "";
+      do {
+        key = buildLicenseKey(els.keyMode.value, els.keyCustomPrefix.value);
+      } while (state.licenses[key]);
+      return key;
+    }
+
+    function buildLicenseKey(mode, customPrefix) {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const block = (length) => Array.from({ length }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join("");
+      if (mode === "none") return `${block(6)}-${block(6)}-${block(4)}`;
+      let prefix = mode === "custom" ? sanitizePrefix(customPrefix) : KEY_FAMILIES[Math.floor(Math.random() * KEY_FAMILIES.length)];
+      if (!prefix) prefix = KEY_FAMILIES[Math.floor(Math.random() * KEY_FAMILIES.length)];
+      return `${prefix}-${block(6)}-${block(6)}`;
+    }
+
+    function sanitizePrefix(value) {
+      return String(value || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+    }
+
+    function renderLicenses() {
+      const query = els.licenseSearch.value.trim().toLowerCase();
+      const rows = Object.entries(state.licenses || {})
+        .filter(([key, license]) => !query || [key, license.username, license.plan, license.status, license.notes].join(" ").toLowerCase().includes(query))
+        .sort((a, b) => String(b[1].created || "").localeCompare(String(a[1].created || "")))
+        .map(([key, license]) => {
+          const status = effectiveLicenseStatus(license);
+          const expiryLabel = license.expiry === "lifetime" ? "Lifetime" : (license.expiry || "-");
+          return `
+            <tr>
+              <td class="mono">${key}</td>
+              <td>${license.username || "-"}</td>
+              <td>${license.plan || "-"}</td>
+              <td><span class="pill ${status}">${status}</span></td>
+              <td>${expiryLabel}</td>
+              <td>${license.created || "-"}</td>
+              <td>Rs ${Number(license.revenue || 0)}</td>
+              <td>
+                <div class="toolbar">
+                  <button class="button-secondary btn" type="button" onclick="copyKey('${escapeSingleQuotes(key)}')">Copy</button>
+                  <button class="button-warning btn" type="button" onclick="setLicenseStatus('${escapeSingleQuotes(key)}', 'paused')">Pause</button>
+                  <button class="button-success btn" type="button" onclick="setLicenseStatus('${escapeSingleQuotes(key)}', 'active')">Activate</button>
+                  <button class="button-success btn" type="button" onclick="extendLicense('${escapeSingleQuotes(key)}', 30)">+30d</button>
+                  <button class="button-danger btn" type="button" onclick="setLicenseStatus('${escapeSingleQuotes(key)}', 'revoked')">Revoke</button>
+                  <button class="button-danger btn" type="button" onclick="deleteLicense('${escapeSingleQuotes(key)}')">Delete</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      els.licenseTable.innerHTML = rows || `<tr><td colspan="8">No licenses matched this filter.</td></tr>`;
+    }
+
+    function setLicenseStatus(key, status) {
+      if (!state.licenses[key]) {
+        setStatus("License not found.", "error");
+        return;
+      }
+      state.licenses[key].status = status;
+      syncState(`License ${key} marked as ${status}.`);
+    }
+
+    function extendLicense(key, days) {
+      const license = state.licenses[key];
+      if (!license) {
+        setStatus("License not found.", "error");
+        return;
+      }
+      if (license.expiry === "lifetime") {
+        setStatus("Lifetime licenses do not need extension.", "warning");
+        return;
+      }
+      const base = license.expiry && license.expiry > today() ? new Date(license.expiry) : new Date();
+      base.setDate(base.getDate() + days);
+      license.expiry = base.toISOString().slice(0, 10);
+      if (license.status !== "revoked") license.status = "active";
+      syncState(`License ${key} extended by ${days} days.`);
+    }
+
+    function deleteLicense(key) {
+      if (!window.confirm(`Delete license ${key}?`)) return;
+      delete state.licenses[key];
+      syncState(`License ${key} deleted.`);
+    }
+
+    async function copyKey(key) {
+      try {
+        await navigator.clipboard.writeText(key);
+        setStatus(`Copied ${key} to clipboard.`, "success");
+      } catch (error) {
+        setStatus(`Copy failed for ${key}.`, "warning");
+      }
+    }
+
+    async function copyLatestKey() {
+      if (!latestKey) {
+        setStatus("No generated key to copy yet.", "warning");
+        return;
+      }
+      await copyKey(latestKey);
+    }
+
+    async function updateAdminAuth() {
+      const username = sanitizeUsername(els.adminConfigUser.value) || "admin";
+      const password = els.adminConfigPass.value;
+      if (!password) {
+        setStatus("Enter a new admin password first.", "error");
+        return;
+      }
+      state.admin_auth = {
+        username,
+        password_hash: await sha256Base64(`${username}|${password}|HeraxAdminPortal`),
+        updated: today()
+      };
+      sessionStorage.setItem(SESSION_KEY, username);
+      els.adminConfigPass.value = "";
+      populateAdminForm();
+      setLoginStatus("Admin credentials updated. Use the new login next time.", "success");
+      syncState("Admin login settings updated.");
+    }
+
+    function syncState(message) {
+      recomputeStats();
+      state.meta = { ...(state.meta || {}), schema_version: 3, updated_at: today(), note: "Local draft is saved in the browser. Use Save To GitHub to publish changes." };
+      els.jsonPreview.value = JSON.stringify(state, null, 2);
+      renderStats();
+      renderUsers();
+      renderLicenses();
+      persistDraft();
+      setStatus(message, "success");
+    }
+
+    function recomputeStats() {
+      const users = Object.keys(state.users || {});
+      const licenses = Object.values(state.licenses || {});
+      let active = 0;
+      let paused = 0;
+      let revoked = 0;
+      let expired = 0;
+      let revenue = 0;
+      for (const license of licenses) {
+        revenue += Number(license.revenue || 0);
+        const status = effectiveLicenseStatus(license);
+        if (status === "active") active += 1;
+        if (status === "paused") paused += 1;
+        if (status === "revoked") revoked += 1;
+        if (status === "expired") expired += 1;
+      }
+      state.stats = { total_users: users.length, total_keys: licenses.length, active_keys: active, paused_keys: paused, revoked_keys: revoked, expired_keys: expired, revenue };
+    }
+
+    function renderStats() {
+      const stats = state.stats || {};
+      els.statsGrid.innerHTML = [
+        stat("Customers", stats.total_users || 0),
+        stat("Keys", stats.total_keys || 0),
+        stat("Active", stats.active_keys || 0),
+        stat("Paused", stats.paused_keys || 0),
+        stat("Revoked", stats.revoked_keys || 0),
+        stat("Expired", stats.expired_keys || 0),
+        stat("Revenue", `Rs ${stats.revenue || 0}`)
+      ].join("");
+    }
+
+    function importPreview() {
+      try {
+        state = normalize(JSON.parse(els.jsonPreview.value));
+        populateAdminForm();
+        syncState("JSON preview imported.");
+      } catch (error) {
+        setStatus(`JSON import failed: ${error.message}`, "error");
+      }
+    }
+
+    async function saveToRepo() {
+      const token = els.githubToken.value.trim();
+      const owner = els.repoOwner.value.trim();
+      const repo = els.repoName.value.trim();
+      const branch = els.repoBranch.value.trim() || "main";
+      const filePath = els.repoPath.value.trim() || "database/herax_licenses.json";
+      if (!token || !owner || !repo || !filePath) {
+        setStatus("Owner, repo, file path, and GitHub token are required.", "error");
+        return;
+      }
+      try {
+        const baseUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodePath(filePath)}`;
+        const metaResponse = await fetch(`${baseUrl}?ref=${encodeURIComponent(branch)}`, {
+          headers: { "Authorization": `Bearer ${token}`, "Accept": "application/vnd.github+json" }
+        });
+        if (!metaResponse.ok) throw new Error(`Could not fetch file metadata (${metaResponse.status}).`);
+        const currentFile = await metaResponse.json();
+        const saveResponse = await fetch(baseUrl, {
+          method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: `Update ${filePath} via admin portal`,
+            content: utf8ToBase64(JSON.stringify(state, null, 2)),
+            sha: currentFile.sha,
+            branch
+          })
+        });
+        if (!saveResponse.ok) {
+          const body = await saveResponse.text();
+          throw new Error(`GitHub save failed (${saveResponse.status}): ${body}`);
+        }
+        setStatus(`Saved ${filePath} to ${owner}/${repo}@${branch}.`, "success");
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    }
+
+    async function copyJson() {
+      try {
+        await navigator.clipboard.writeText(els.jsonPreview.value);
+        setStatus("Current JSON copied to clipboard.", "success");
+      } catch (error) {
+        setStatus("Copy failed.", "warning");
+      }
+    }
+
+    function downloadJson() {
+      const blob = new Blob([els.jsonPreview.value], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "herax_licenses.json";
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setStatus("JSON download started.", "success");
+    }
+
+    function persistDraft() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function populateAdminForm() {
+      els.adminConfigUser.value = state.admin_auth.username || "admin";
+      els.adminUsername.value = state.admin_auth.username || "admin";
+    }
+
+    function effectiveLicenseStatus(license) {
+      if (!license) return "revoked";
+      if (license.status === "revoked") return "revoked";
+      if (license.status === "paused") return "paused";
+      if (license.expiry !== "lifetime" && license.expiry && license.expiry < today()) return "expired";
+      return "active";
+    }
+
+    function normalize(data) {
+      return {
+        admin_auth: { ...seedState.admin_auth, ...(data?.admin_auth || {}) },
+        users: data?.users || {},
+        licenses: data?.licenses || {},
+        stats: { ...seedState.stats, ...(data?.stats || {}) },
+        meta: { ...seedState.meta, ...(data?.meta || {}) }
+      };
+    }
+
+    function stat(label, value) {
+      return `<div class="stat-card"><span>${label}</span><strong>${value}</strong></div>`;
+    }
+
+    async function sha256Base64(value) {
+      const bytes = new TextEncoder().encode(value);
+      const hash = await crypto.subtle.digest("SHA-256", bytes);
+      return btoa(String.fromCharCode(...new Uint8Array(hash)));
+    }
+
+    function utf8ToBase64(value) {
+      const bytes = new TextEncoder().encode(value);
+      let binary = "";
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return btoa(binary);
+    }
+
+    function encodePath(path) {
+      return path.split("/").map(encodeURIComponent).join("/");
+    }
+
+    function inferRepoDefaults() {
+      if (location.hostname.endsWith(".github.io")) {
+        els.repoOwner.value = location.hostname.split(".")[0];
+        const pieces = location.pathname.split("/").filter(Boolean);
+        if (pieces.length) els.repoName.value = pieces[0];
+      } else {
+        els.repoOwner.value = "your-user";
+        els.repoName.value = "login-auth";
+      }
+    }
+
+    function setDefaultExpiry() {
+      if (els.licensePlan.value === "lifetime") return;
+      const date = new Date();
+      date.setDate(date.getDate() + 30);
+      els.licenseExpiry.value = date.toISOString().slice(0, 10);
+    }
+
+    function autoExpiry(plan) {
+      const date = new Date();
+      if (plan === "30days") date.setDate(date.getDate() + 30);
+      else date.setFullYear(date.getFullYear() + 1);
+      return date.toISOString().slice(0, 10);
+    }
+
+    function setStatus(message, tone) {
+      els.adminStatus.className = `status-banner${tone ? ` ${tone}` : ""}`;
+      els.adminStatus.textContent = message;
+    }
+
+    function setLoginStatus(message, tone) {
+      els.loginStatus.className = `status-banner${tone ? ` ${tone}` : ""}`;
+      els.loginStatus.textContent = message;
+    }
+
+    function sanitizeUsername(value) {
+      return String(value || "").trim().replace(/\s+/g, "_");
+    }
+
+    function escapeSingleQuotes(value) {
+      return String(value).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    window.renameUser = renameUser;
+    window.resetPasswordFor = resetPasswordFor;
+    window.deleteUser = deleteUser;
+    window.setLicenseStatus = setLicenseStatus;
+    window.extendLicense = extendLicense;
+    window.deleteLicense = deleteLicense;
+    window.copyKey = copyKey;
+  </script>
+</body>
+</html>
