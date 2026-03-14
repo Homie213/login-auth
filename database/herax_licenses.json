@@ -1,6 +1,9 @@
 {
-  "sasan": {
-    "password_hash": "08e92920432c3ffb16c1ebc7194d39ee",
-    "payment_status": "approved"
-  }
+  "users": [
+    {
+      "username": "sasan",
+      "password": "herax123",
+      "status": "approved"
+    }
+  ]
 }
