@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Herax Licensing Dashboard</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 251, 245, 0.86);
+      --panel-strong: #fffaf1;
+      --ink: #1d1a16;
+      --muted: #6a6259;
+      --line: rgba(29, 26, 22, 0.12);
+      --accent: #0f766e;
+      --accent-2: #c2410c;
+      --danger: #b91c1c;
+      --warn: #b45309;
+      --ok: #15803d;
+      --shadow: 0 24px 60px rgba(53, 37, 22, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.2), transparent 28%),
+        radial-gradient(circle at top right, rgba(194, 65, 12, 0.16), transparent 30%),
+        linear-gradient(180deg, #f8f4ed 0%, #efe6d8 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      grid-column: span 12;
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.1rem;
+    }
+
+    .two-up {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .three-up {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--ink);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+
+    textarea {
+      min-height: 124px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #f7fffd;
+    }
+
+    .secondary {
+      background: #efe3d0;
+      color: var(--ink);
+    }
+
+    .danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .warning {
+      background: var(--warn);
+      color: white;
+    }
+
+    .success {
+      background: var(--ok);
+      color: white;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.55rem;
+      margin-top: 6px;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      border: 1px solid transparent;
+    }
+
+    .pill.active {
+      background: rgba(21, 128, 61, 0.12);
+      color: var(--ok);
+      border-color: rgba(21, 128, 61, 0.18);
+    }
+
+    .pill.paused {
+      background: rgba(180, 83, 9, 0.12);
+      color: var(--warn);
+      border-color: rgba(180, 83, 9, 0.18);
+    }
+
+    .pill.revoked,
+    .pill.expired {
+      background: rgba(185, 28, 28, 0.12);
+      color: var(--danger);
+      border-color: rgba(185, 28, 28, 0.18);
+    }
+
+    .mono {
+      font-family: "Courier New", monospace;
+      font-size: 0.9rem;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 900px) {
+      .span-4 {
+        grid-column: span 4;
+      }
+
+      .span-5 {
+        grid-column: span 5;
+      }
+
+      .span-7 {
+        grid-column: span 7;
+      }
+
+      .span-8 {
+        grid-column: span 8;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .two-up,
+      .three-up {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        padding: 20px 14px 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <h1>Herax Licensing Dashboard</h1>
+      <p>Static admin panel for managing users and licenses in a GitHub Gist JSON file. Passwords are hashed in the browser, licenses are handled gracefully, and the Windows client can validate against a public raw JSON URL.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card span-5">
+        <h2>Gist Connection</h2>
+        <div class="field">
+          <label for="gistId">Gist ID</label>
+          <input id="gistId" placeholder="Example: a1b2c3d4e5f6" />
+        </div>
+        <div class="field">
+          <label for="gistFilename">Filename inside gist</label>
+          <input id="gistFilename" value="herax_licenses.json" />
+        </div>
+        <div class="field">
+          <label for="rawUrl">Public raw JSON URL</label>
+          <input id="rawUrl" placeholder="https://gist.githubusercontent.com/.../raw/herax_licenses.json" />
+        </div>
+        <div class="field">
+          <label for="githubToken">GitHub token for admin saves</label>
+          <input id="githubToken" type="password" placeholder="Classic token or fine-grained token with gist access" />
+        </div>
+        <div class="actions">
+          <button class="primary" id="loadRemoteBtn">Load from Gist</button>
+          <button class="secondary" id="saveRemoteBtn">Save to Gist</button>
+          <button class="secondary" id="seedBtn">Load seed data</button>
+        </div>
+        <div class="hint">Keep your token private. The page uses it only for direct GitHub API requests from your browser.</div>
+      </article>
+
+      <article class="card span-7">
+        <h2>Stats</h2>
+        <div class="stats" id="statsGrid"></div>
+        <div class="status" id="statusBox">Ready.</div>
+      </article>
+
+      <article class="card span-4">
+        <h2>Create Account</h2>
+        <div class="field">
+          <label for="newUsername">Username</label>
+          <input id="newUsername" placeholder="john123" />
+        </div>
+        <div class="field">
+          <label for="newPassword">Password</label>
+          <input id="newPassword" type="password" placeholder="Create a password" />
+        </div>
+        <div class="field">
+          <label for="newRole">Role</label>
+          <select id="newRole">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button class="primary" id="createUserBtn">Create User</button>
+        </div>
+      </article>
+
+      <article class="card span-8">
+        <h2>Generate License</h2>
+        <div class="three-up">
+          <div class="field">
+            <label for="licenseUsername">Username</label>
+            <input id="licenseUsername" placeholder="john123" />
+          </div>
+          <div class="field">
+            <label for="licensePlan">Plan</label>
+            <select id="licensePlan">
+              <option value="30days">30 Days</option>
+              <option value="lifetime">Lifetime</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="licensePrice">Revenue</label>
+            <input id="licensePrice" type="number" min="0" value="500" />
+          </div>
+        </div>
+        <div class="two-up">
+          <div class="field">
+            <label for="expiryDate">Expiry date</label>
+            <input id="expiryDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="licenseNotes">Notes</label>
+            <input id="licenseNotes" placeholder="Optional admin note" />
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="generateLicenseBtn">Generate License</button>
+          <button class="secondary" id="copyLatestBtn">Copy Latest Key</button>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <h2>Licenses</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>User</th>
+                <th>Plan</th>
+                <th>Status</th>
+                <th>Expiry</th>
+                <th>Created</th>
+                <th>Revenue</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="licenseTable"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <h2>JSON Preview</h2>
+        <textarea id="jsonPreview" spellcheck="false"></textarea>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const seedData = {
+      users: {},
+      licenses: {},
+      stats: {
+        total_users: 0,
+        total_keys: 0,
+        active_keys: 0,
+        paused_keys: 0,
+        revoked_keys: 0,
+        expired_keys: 0,
+        revenue: 0
+      }
+    };
+
+    let state = structuredClone(seedData);
+    let latestLicenseKey = "";
+
+    const els = {
+      gistId: document.getElementById("gistId"),
+      gistFilename: document.getElementById("gistFilename"),
+      rawUrl: document.getElementById("rawUrl"),
+      githubToken: document.getElementById("githubToken"),
+      statusBox: document.getElementById("statusBox"),
+      statsGrid: document.getElementById("statsGrid"),
+      jsonPreview: document.getElementById("jsonPreview"),
+      newUsername: document.getElementById("newUsername"),
+      newPassword: document.getElementById("newPassword"),
+      newRole: document.getElementById("newRole"),
+      licenseUsername: document.getElementById("licenseUsername"),
+      licensePlan: document.getElementById("licensePlan"),
+      licensePrice: document.getElementById("licensePrice"),
+      expiryDate: document.getElementById("expiryDate"),
+      licenseNotes: document.getElementById("licenseNotes"),
+      licenseTable: document.getElementById("licenseTable")
+    };
+
+    document.getElementById("seedBtn").addEventListener("click", () => {
+      state = structuredClone(seedData);
+      syncState("Loaded local seed data.");
+    });
+
+    document.getElementById("createUserBtn").addEventListener("click", createUser);
+    document.getElementById("generateLicenseBtn").addEventListener("click", generateLicense);
+    document.getElementById("copyLatestBtn").addEventListener("click", copyLatestKey);
+    document.getElementById("loadRemoteBtn").addEventListener("click", loadFromRemote);
+    document.getElementById("saveRemoteBtn").addEventListener("click", saveToRemote);
+    els.jsonPreview.addEventListener("change", importPreview);
+
+    setDefaultExpiry();
+    syncState("Ready.");
+
+    function setStatus(message) {
+      els.statusBox.textContent = message;
+    }
+
+    function setDefaultExpiry() {
+      const date = new Date();
+      date.setDate(date.getDate() + 30);
+      els.expiryDate.value = date.toISOString().slice(0, 10);
+    }
+
+    async function sha256Base64(value) {
+      const bytes = new TextEncoder().encode(value);
+      const hash = await crypto.subtle.digest("SHA-256", bytes);
+      return btoa(String.fromCharCode(...new Uint8Array(hash)));
+    }
+
+    async function createUser() {
+      const username = els.newUsername.value.trim();
+      const password = els.newPassword.value;
+      const role = els.newRole.value;
+
+      if (!username || !password) {
+        setStatus("Username and password are required.");
+        return;
+      }
+
+      if (state.users[username]) {
+        setStatus("That username already exists.");
+        return;
+      }
+
+      state.users[username] = {
+        password_hash: await sha256Base64(`${username}|${password}|HeraxLicensing`),
+        role,
+        created: today()
+      };
+
+      els.licenseUsername.value = username;
+      els.newUsername.value = "";
+      els.newPassword.value = "";
+      syncState(`User ${username} created.`);
+    }
+
+    function generateLicense() {
+      const username = els.licenseUsername.value.trim();
+      const plan = els.licensePlan.value;
+      const revenue = Number(els.licensePrice.value || 0);
+      const notes = els.licenseNotes.value.trim();
+
+      if (!username) {
+        setStatus("Enter a username before generating a license.");
+        return;
+      }
+
+      if (!state.users[username]) {
+        setStatus("Create the user first so the license stays linked to a known account.");
+        return;
+      }
+
+      const key = buildLicenseKey();
+      const expiry = plan === "lifetime" ? "lifetime" : (els.expiryDate.value || autoExpiry(plan));
+
+      state.licenses[key] = {
+        username,
+        plan,
+        status: "active",
+        expiry,
+        created: today(),
+        revenue,
+        notes
+      };
+
+      latestLicenseKey = key;
+      els.licenseNotes.value = "";
+      syncState(`License ${key} created for ${username}.`);
+    }
+
+    function copyLatestKey() {
+      if (!latestLicenseKey) {
+        setStatus("No generated key to copy yet.");
+        return;
+      }
+
+      navigator.clipboard.writeText(latestLicenseKey)
+        .then(() => setStatus(`Copied ${latestLicenseKey} to clipboard.`))
+        .catch(() => setStatus(`Copy failed. Latest key: ${latestLicenseKey}`));
+    }
+
+    async function loadFromRemote() {
+      const rawUrl = els.rawUrl.value.trim();
+      const gistId = els.gistId.value.trim();
+      const filename = els.gistFilename.value.trim();
+
+      try {
+        let payload;
+        if (rawUrl) {
+          const response = await fetch(rawUrl, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`Raw URL fetch failed with ${response.status}`);
+          }
+          payload = await response.json();
+        } else if (gistId && filename) {
+          const response = await fetch(`https://api.github.com/gists/${gistId}`, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`Gist lookup failed with ${response.status}`);
+          }
+          const gist = await response.json();
+          const file = gist.files[filename];
+          if (!file) {
+            throw new Error(`File ${filename} was not found in the gist.`);
+          }
+          payload = JSON.parse(file.content);
+        } else {
+          throw new Error("Provide either a raw URL or both gist ID and filename.");
+        }
+
+        state = normalize(payload);
+        syncState("Remote data loaded.");
+      } catch (error) {
+        setStatus(`Load failed: ${error.message}`);
+      }
+    }
+
+    async function saveToRemote() {
+      const token = els.githubToken.value.trim();
+      const gistId = els.gistId.value.trim();
+      const filename = els.gistFilename.value.trim();
+
+      if (!token || !gistId || !filename) {
+        setStatus("Gist ID, filename, and token are required to save.");
+        return;
+      }
+
+      syncComputedStats();
+
+      try {
+        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            files: {
+              [filename]: {
+                content: JSON.stringify(state, null, 2)
+              }
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const body = await response.text();
+          throw new Error(`GitHub save failed with ${response.status}: ${body}`);
+        }
+
+        setStatus("Gist updated successfully.");
+      } catch (error) {
+        setStatus(`Save failed: ${error.message}`);
+      }
+    }
+
+    function importPreview() {
+      try {
+        state = normalize(JSON.parse(els.jsonPreview.value));
+        syncState("Preview imported into memory.");
+      } catch (error) {
+        setStatus(`Preview import failed: ${error.message}`);
+      }
+    }
+
+    function syncState(message) {
+      syncComputedStats();
+      renderStats();
+      renderLicenses();
+      els.jsonPreview.value = JSON.stringify(state, null, 2);
+      setStatus(message);
+    }
+
+    function syncComputedStats() {
+      const users = Object.keys(state.users || {});
+      const licenses = Object.entries(state.licenses || {});
+      const todayIso = today();
+
+      let active = 0;
+      let paused = 0;
+      let revoked = 0;
+      let expired = 0;
+      let revenue = 0;
+
+      for (const [, license] of licenses) {
+        revenue += Number(license.revenue || 0);
+        const effectiveStatus = effectiveLicenseStatus(license, todayIso);
+        if (effectiveStatus === "active") active += 1;
+        if (effectiveStatus === "paused") paused += 1;
+        if (effectiveStatus === "revoked") revoked += 1;
+        if (effectiveStatus === "expired") expired += 1;
+      }
+
+      state.stats = {
+        total_users: users.length,
+        total_keys: licenses.length,
+        active_keys: active,
+        paused_keys: paused,
+        revoked_keys: revoked,
+        expired_keys: expired,
+        revenue
+      };
+    }
+
+    function renderStats() {
+      const stats = state.stats;
+      const items = [
+        ["Users", stats.total_users],
+        ["Keys", stats.total_keys],
+        ["Active", stats.active_keys],
+        ["Paused", stats.paused_keys],
+        ["Revoked", stats.revoked_keys],
+        ["Expired", stats.expired_keys],
+        ["Revenue", `Rs ${stats.revenue}`]
+      ];
+
+      els.statsGrid.innerHTML = items.map(([label, value]) => `
+        <div class="stat">
+          <span>${label}</span>
+          <strong>${value}</strong>
+        </div>
+      `).join("");
+    }
+
+    function renderLicenses() {
+      const rows = Object.entries(state.licenses || {})
+        .sort((a, b) => String(b[1].created).localeCompare(String(a[1].created)))
+        .map(([key, license]) => {
+          const status = effectiveLicenseStatus(license, today());
+          const expiryLabel = license.expiry === "lifetime" ? "Lifetime" : license.expiry;
+
+          return `
+            <tr>
+              <td class="mono">${key}</td>
+              <td>${license.username || "-"}</td>
+              <td>${license.plan || "-"}</td>
+              <td><span class="pill ${status}">${status}</span></td>
+              <td>${expiryLabel}</td>
+              <td>${license.created || "-"}</td>
+              <td>Rs ${Number(license.revenue || 0)}</td>
+              <td>
+                <div class="actions">
+                  <button class="warning" onclick="setLicenseStatus('${key}', 'paused')">Pause</button>
+                  <button class="success" onclick="extendLicense('${key}', 30)">+30d</button>
+                  <button class="danger" onclick="setLicenseStatus('${key}', 'revoked')">Revoke</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+
+      els.licenseTable.innerHTML = rows || `<tr><td colspan="8">No licenses yet.</td></tr>`;
+    }
+
+    function setLicenseStatus(key, status) {
+      if (!state.licenses[key]) {
+        setStatus("License not found.");
+        return;
+      }
+
+      state.licenses[key].status = status;
+      syncState(`License ${key} marked as ${status}.`);
+    }
+
+    function extendLicense(key, days) {
+      const license = state.licenses[key];
+      if (!license) {
+        setStatus("License not found.");
+        return;
+      }
+
+      if (license.expiry === "lifetime") {
+        setStatus("Lifetime licenses do not need extension.");
+        return;
+      }
+
+      const base = license.expiry && license.expiry > today() ? new Date(license.expiry) : new Date();
+      base.setDate(base.getDate() + days);
+      license.expiry = base.toISOString().slice(0, 10);
+      if (license.status !== "revoked") {
+        license.status = "active";
+      }
+      syncState(`License ${key} extended by ${days} days.`);
+    }
+
+    function effectiveLicenseStatus(license, nowIso) {
+      if (!license) return "revoked";
+      if (license.status === "revoked") return "revoked";
+      if (license.status === "paused") return "paused";
+      if (license.expiry !== "lifetime" && license.expiry && license.expiry < nowIso) return "expired";
+      return "active";
+    }
+
+    function autoExpiry(plan) {
+      const date = new Date();
+      if (plan === "30days") {
+        date.setDate(date.getDate() + 30);
+      } else {
+        date.setFullYear(date.getFullYear() + 1);
+      }
+      return date.toISOString().slice(0, 10);
+    }
+
+    function buildLicenseKey() {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const pick = () => Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join("");
+      return `HERAX-${pick()}-${pick()}`;
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function normalize(data) {
+      return {
+        users: data?.users || {},
+        licenses: data?.licenses || {},
+        stats: {
+          ...seedData.stats,
+          ...(data?.stats || {})
+        }
+      };
+    }
+
+    window.setLicenseStatus = setLicenseStatus;
+    window.extendLicense = extendLicense;
+  </script>
+</body>
+</html>

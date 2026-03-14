@@ -1,0 +1,13 @@
+{
+  "users": {},
+  "licenses": {},
+  "stats": {
+    "total_users": 0,
+    "total_keys": 0,
+    "active_keys": 0,
+    "paused_keys": 0,
+    "revoked_keys": 0,
+    "expired_keys": 0,
+    "revenue": 0
+  }
+}
