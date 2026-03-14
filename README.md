@@ -1,17 +1,19 @@
 # login-auth
 
-Static GitHub Pages dashboard for managing users and licenses stored in a GitHub Gist JSON file.
+Static auth and licensing repo for a desktop app.
 
 ## Repo layout
 
-- `docs/index.html`: GitHub Pages entrypoint
-- `website/index.html`: lightweight redirect to the Pages app
-- `database/herax_licenses.json`: local seed JSON structure
+- `website/index.html`: admin dashboard
+- `database/herax_licenses.json`: license data seed structure
+- `exe/`: place the shipped Windows app here
 
 ## GitHub Pages
 
 Enable Pages from:
 
 - Branch: `main`
-- Folder: `/docs`
+- Folder: `/root`
+
+The root `index.html` redirects to `website/` so the live URL opens the dashboard.
 Herax Premium User Management &amp; Authentication System
