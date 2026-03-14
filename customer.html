@@ -6,78 +6,103 @@
   <title>Enchaced Herax.gg Customer Portal</title>
   <link rel="stylesheet" href="css/site.css" />
 </head>
-<body>
+<body class="page-customer">
   <div class="page-shell">
     <nav class="site-nav">
       <a class="brand" href="index.html">
         <span class="brand-mark">HX</span>
         <span class="brand-copy">
           <strong>Enchaced Herax.gg</strong>
-          <span>Customer access and license status</span>
+          <span>Member portal and activation flow</span>
         </span>
       </a>
       <div class="nav-links">
         <a href="index.html">Home</a>
-        <a href="customer.html">Customer Portal</a>
+        <a href="#flow">Flow</a>
+        <a href="#portalStart">Portal</a>
+        <a href="#snapshot">Snapshot</a>
+      </div>
+      <div class="nav-actions">
+        <a class="ghost-chip" href="#support">Support</a>
+        <a class="btn btn-primary" href="#portalStart">Enter Portal</a>
       </div>
     </nav>
 
-    <section class="hero-grid">
-      <article class="hero-card">
-        <span class="eyebrow">Customer Access</span>
-        <h1 class="headline">Check account status and active licenses in one place.</h1>
-        <p class="lede">Existing customers can sign in to view account details, active or expired licenses, and support notes. New customers can generate a clean access request to send manually.</p>
-        <div class="hero-metrics">
-          <div class="metric">
-            <span>Sign In</span>
-            <strong>Username + Password + Key</strong>
-          </div>
-          <div class="metric">
-            <span>License View</span>
-            <strong>Status + Expiry</strong>
-          </div>
-          <div class="metric">
-            <span>Fallback</span>
-            <strong>Request Access</strong>
-          </div>
+    <section class="hero-grid customer-hero" id="flow">
+      <article class="hero-card hero-card-main">
+        <span class="eyebrow">Member Access</span>
+        <p class="hero-kicker">Login. Activate. Personalize.</p>
+        <h1 class="headline">One customer control room for credentials, key activation, and account tools.</h1>
+        <p class="lede">The portal now follows a cleaner sequence with polished motion, higher contrast, and a dedicated activation step before account data unlocks.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#portalStart">Start Login</a>
+          <a class="btn btn-secondary" href="#snapshot">View Snapshot Area</a>
         </div>
-        <div class="rect-stage">
-          <div class="rect tall">
-            <span>Customer Board</span>
-            <strong>One rectangular snapshot for status, keys, expiry, and notes.</strong>
+        <div class="hero-metrics hero-metrics-rich">
+          <div class="metric">
+            <span>Step 01</span>
+            <strong>Username + password</strong>
           </div>
-          <div class="rect">
-            <span>Login</span>
-            <strong>Fast account check</strong>
+          <div class="metric">
+            <span>Step 02</span>
+            <strong>Key activation</strong>
           </div>
-          <div class="rect">
-            <span>Plans</span>
-            <strong>Visible instantly</strong>
+          <div class="metric">
+            <span>Step 03</span>
+            <strong>Profile tools unlocked</strong>
           </div>
-          <div class="rect wide">
-            <span>Request</span>
-            <strong>Copy access request in one click</strong>
+          <div class="metric">
+            <span>Support</span>
+            <strong>Register + request path</strong>
           </div>
         </div>
       </article>
 
-      <article class="surface">
-        <h3>How This Works</h3>
-        <p>The customer page reads the published JSON database. Login first verifies username and password, then a second activation step checks the customer key before the account view unlocks.</p>
-        <div class="chip-row">
-          <span class="chip">Published JSON</span>
-          <span class="chip">Hash-based login</span>
-          <span class="chip">Manual approval path</span>
+      <aside class="surface flow-rail">
+        <span class="section-tag">Portal Sequence</span>
+        <div class="flow-step active">
+          <span>01</span>
+          <div>
+            <strong>Verify credentials</strong>
+            <p>Username and password confirm the account before the next step appears.</p>
+          </div>
         </div>
-      </article>
+        <div class="flow-step">
+          <span>02</span>
+          <div>
+            <strong>Enter activation key</strong>
+            <p>The account stays locked until the entered key belongs to that customer and is active.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <span>03</span>
+          <div>
+            <strong>Unlock account tools</strong>
+            <p>After activation, the snapshot, profile image, and password request tools become available.</p>
+          </div>
+        </div>
+        <div class="flow-mini-grid">
+          <div class="signal-tile">
+            <span>Data</span>
+            <strong>Published JSON</strong>
+            <p>Fresh state from the shared database.</p>
+          </div>
+          <div class="signal-tile">
+            <span>Identity</span>
+            <strong>Avatar preview</strong>
+            <p>Saved locally on this device.</p>
+          </div>
+        </div>
+      </aside>
     </section>
 
-    <section class="two-column">
-      <article class="panel">
+    <section class="two-column" id="portalStart">
+      <article class="panel portal-card">
         <div class="panel-header">
           <div>
+            <span class="eyebrow">Portal Door</span>
             <h2>Customer Access</h2>
-            <p class="panel-note">Switch between login and register. Login now uses a 2-step flow: credentials first, then customer key activation.</p>
+            <p class="panel-note">Switch between login and register. The active account view only opens after both credentials and key activation succeed.</p>
           </div>
         </div>
         <div class="auth-toggle">
@@ -165,9 +190,10 @@
         <div class="status-banner" id="customerStatus">Ready.</div>
       </article>
 
-      <article class="panel">
+      <article class="panel support-card" id="support">
         <div class="panel-header">
           <div>
+            <span class="eyebrow">Support Route</span>
             <h2>Need Access?</h2>
             <p class="panel-note">The public site cannot accept unauthenticated direct writes, so new access requests are prepared as a shareable message for manual approval.</p>
           </div>
@@ -197,10 +223,11 @@
       </article>
     </section>
 
-    <section class="dashboard-grid">
+    <section class="dashboard-grid" id="snapshot">
       <article class="panel col-12">
         <div class="panel-header">
           <div>
+            <span class="eyebrow">Member Snapshot</span>
             <h2>Account Snapshot</h2>
             <p class="panel-note">Appears after successful login and key activation.</p>
           </div>
@@ -297,7 +324,7 @@
       </article>
     </section>
 
-    <p class="footer-note">Live public link: `https://homie213.github.io/login-auth/customer.html`</p>
+    <p class="footer-note">Original portal styling with a stronger member flow, cleaner activation step, and a more cinematic feel.</p>
   </div>
 
   <script>
