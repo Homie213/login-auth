@@ -30,7 +30,7 @@
         <div class="hero-metrics">
           <div class="metric">
             <span>Sign In</span>
-            <strong>Username + Password</strong>
+            <strong>Username + Password + Key</strong>
           </div>
           <div class="metric">
             <span>License View</span>
@@ -63,7 +63,7 @@
 
       <article class="surface">
         <h3>How This Works</h3>
-        <p>The customer page reads the published JSON database. It does not directly rewrite repository files from the public side, so new access requests are prepared as a message that you can copy and send privately.</p>
+        <p>The customer page reads the published JSON database. Login first verifies username and password, then a second activation step checks the customer key before the account view unlocks.</p>
         <div class="chip-row">
           <span class="chip">Published JSON</span>
           <span class="chip">Hash-based login</span>
@@ -77,7 +77,7 @@
         <div class="panel-header">
           <div>
             <h2>Customer Access</h2>
-            <p class="panel-note">Switch between login and register. Login checks an active account, while register prepares a clean signup request.</p>
+            <p class="panel-note">Switch between login and register. Login now uses a 2-step flow: credentials first, then customer key activation.</p>
           </div>
         </div>
         <div class="auth-toggle">
@@ -94,14 +94,33 @@
               <label for="customerPassword">Password</label>
               <input id="customerPassword" type="password" placeholder="Enter password" />
             </div>
-            <div class="field">
-              <label for="customerLicenseKey">License key (optional)</label>
-              <input id="customerLicenseKey" placeholder="Paste a specific key to check" />
-            </div>
           </div>
           <div class="hero-actions">
             <button class="btn btn-primary" id="customerLoginBtn" type="button">Login</button>
             <button class="btn btn-secondary" id="customerReloadBtn" type="button">Reload Published Data</button>
+          </div>
+          <div class="auth-pane hide" id="activationPane">
+            <div class="divider"></div>
+            <div class="panel-header">
+              <div>
+                <h2>Key Activation</h2>
+                <p class="panel-note">Credentials verify hone ke baad yahan apni key enter karo. Valid key ke baad hi account active hoga.</p>
+              </div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="activationUsername">Verified username</label>
+                <input id="activationUsername" placeholder="Verified after login" readonly />
+              </div>
+              <div class="field">
+                <label for="activationKey">License key</label>
+                <input id="activationKey" placeholder="Paste your activation key" />
+              </div>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-primary" id="activateAccountBtn" type="button">Activate Account</button>
+            </div>
+            <div class="status-banner" id="activationStatus">Login first, then enter your key.</div>
           </div>
         </div>
         <div class="auth-pane hide" id="registerPane">
@@ -183,7 +202,7 @@
         <div class="panel-header">
           <div>
             <h2>Account Snapshot</h2>
-            <p class="panel-note">Appears after a successful login.</p>
+            <p class="panel-note">Appears after successful login and key activation.</p>
           </div>
         </div>
         <div class="profile-stage">
@@ -227,7 +246,7 @@
             <div class="panel-header">
               <div>
                 <h2>Security Tools</h2>
-                <p class="panel-note">Customers can prepare a password change request after logging in. The request is copied privately and can be applied from the private control side.</p>
+                <p class="panel-note">Customers can prepare a password change request after the account is active. The request is copied privately and can be applied from the private control side.</p>
               </div>
             </div>
             <div class="field-grid two">
@@ -307,9 +326,12 @@
     const els = {
       username: document.getElementById("customerUsername"),
       password: document.getElementById("customerPassword"),
-      licenseKey: document.getElementById("customerLicenseKey"),
       loginPane: document.getElementById("loginPane"),
       registerPane: document.getElementById("registerPane"),
+      activationPane: document.getElementById("activationPane"),
+      activationUsername: document.getElementById("activationUsername"),
+      activationKey: document.getElementById("activationKey"),
+      activationStatus: document.getElementById("activationStatus"),
       showLoginPaneBtn: document.getElementById("showLoginPaneBtn"),
       showRegisterPaneBtn: document.getElementById("showRegisterPaneBtn"),
       status: document.getElementById("customerStatus"),
@@ -343,6 +365,7 @@
     };
 
     document.getElementById("customerLoginBtn").addEventListener("click", loginCustomer);
+    document.getElementById("activateAccountBtn").addEventListener("click", activateCustomerAccount);
     document.getElementById("customerReloadBtn").addEventListener("click", loadPublishedData);
     document.getElementById("copyRequestBtn").addEventListener("click", copyAccessRequest);
     document.getElementById("changePasswordBtn").addEventListener("click", preparePasswordChange);
@@ -373,47 +396,76 @@
     async function loginCustomer() {
       const username = els.username.value.trim();
       const password = els.password.value;
-      const specificKey = els.licenseKey.value.trim();
 
       if (!username || !password) {
         setStatus("Username and password are required.", "error");
+        setActivationStatus("Login first, then enter your key.", "warning");
         return;
       }
 
       const user = customerState.users[username];
       if (!user) {
         currentSession = null;
+        setActivationState(false);
         setStatus("Account not found. Use the access request form if you are new.", "error");
-        renderCustomer([], null, username);
+        renderCustomer([], null, "", false);
         return;
       }
 
       const passwordHash = await sha256Base64(`${username}|${password}|HeraxLicensing`);
       if (passwordHash !== user.password_hash) {
         currentSession = null;
+        setActivationState(false);
         setStatus("Invalid password for this account.", "error");
-        renderCustomer([], user, username);
+        renderCustomer([], null, "", false);
         return;
       }
 
-      let licenses = Object.entries(customerState.licenses || {})
+      const licenses = Object.entries(customerState.licenses || {})
         .filter(([, license]) => license.username === username)
         .map(([key, license]) => ({ key, ...license }));
 
-      if (specificKey) {
-        licenses = licenses.filter((license) => license.key === specificKey);
-        if (!licenses.length) {
-          setStatus("That license key does not belong to the current user.", "error");
-          renderCustomer([], user, username);
-          return;
-        }
+      licenses.sort((a, b) => String(b.created || "").localeCompare(String(a.created || "")));
+      currentSession = { username, user, licenses, isActivated: false, activatedLicenseKey: "" };
+      setActivationState(true, username);
+      renderCustomer(licenses, user, username, false);
+      setStatus(`Credentials verified for ${username}. Ab key enter karke account activate karo.`, "success");
+      setActivationStatus("Verified. Enter your license key to activate account.", "success");
+      setPasswordStatus("Login aur key activation ke baad profile tools unlock honge.", "warning");
+    }
+
+    function activateCustomerAccount() {
+      if (!currentSession) {
+        setActivationStatus("Pehle login karo, phir key enter karo.", "warning");
+        return;
       }
 
-      licenses.sort((a, b) => String(b.created || "").localeCompare(String(a.created || "")));
-      currentSession = { username, password, user };
-      renderCustomer(licenses, user, username);
-      setStatus(`Welcome ${username}. ${licenses.length} license record(s) matched.`, "success");
-      setPasswordStatus("Profile tools unlocked for this session.", "success");
+      const enteredKey = els.activationKey.value.trim();
+      if (!enteredKey) {
+        setActivationStatus("License key required hai.", "error");
+        return;
+      }
+
+      const matchedLicense = (currentSession.licenses || []).find((license) => license.key === enteredKey);
+      if (!matchedLicense) {
+        setActivationStatus("Ye key is account ke saath match nahi karti.", "error");
+        renderCustomer([], currentSession.user, currentSession.username, false);
+        return;
+      }
+
+      const status = effectiveStatus(matchedLicense);
+      if (status !== "active") {
+        setActivationStatus(`Key status ${status} hai. Active key ki zarurat hai.`, "error");
+        renderCustomer([], currentSession.user, currentSession.username, false);
+        return;
+      }
+
+      currentSession.isActivated = true;
+      currentSession.activatedLicenseKey = enteredKey;
+      renderCustomer(currentSession.licenses, currentSession.user, currentSession.username, true);
+      setStatus(`Account active ho gaya for ${currentSession.username}.`, "success");
+      setActivationStatus(`Key verified: ${enteredKey}`, "success");
+      setPasswordStatus("Profile tools unlocked for this active account.", "success");
     }
 
     async function copyAccessRequest() {
@@ -491,11 +543,17 @@
       els.registerPane.classList.toggle("hide", isLogin);
       els.showLoginPaneBtn.classList.toggle("active", isLogin);
       els.showRegisterPaneBtn.classList.toggle("active", !isLogin);
+      if (!isLogin) {
+        setActivationState(false);
+      } else if (!currentSession || currentSession.isActivated) {
+        setActivationState(false);
+      }
     }
 
-    function renderCustomer(licenses, user, username) {
-      const activeCount = licenses.filter((license) => effectiveStatus(license) === "active").length;
-      const latestExpiry = licenses
+    function renderCustomer(licenses, user, username, isActivated) {
+      const visibleLicenses = isActivated ? licenses : [];
+      const activeCount = visibleLicenses.filter((license) => effectiveStatus(license) === "active").length;
+      const latestExpiry = visibleLicenses
         .map((license) => license.expiry)
         .filter(Boolean)
         .sort()
@@ -504,13 +562,13 @@
       els.summary.innerHTML = user ? [
         stat("Customer", username),
         stat("Role", user.role || "user"),
-        stat("Profile Status", user.status || "active"),
-        stat("Matched Keys", String(licenses.length)),
+        stat("Profile Status", isActivated ? "active" : "awaiting_key"),
+        stat("Matched Keys", isActivated ? String(visibleLicenses.length) : "Locked"),
         stat("Active Keys", String(activeCount)),
         stat("Latest Expiry", latestExpiry === "lifetime" ? "Lifetime" : latestExpiry)
       ].join("") : "";
 
-      const rows = licenses.map((license) => {
+      const rows = visibleLicenses.map((license) => {
         const status = effectiveStatus(license);
         const expiryLabel = license.expiry === "lifetime" ? "Lifetime" : (license.expiry || "-");
         return `
@@ -525,17 +583,17 @@
         `;
       }).join("");
 
-      els.table.innerHTML = rows || `<tr><td colspan="6">No license records to show.</td></tr>`;
-      renderProfileCard(user, username, licenses);
+      els.table.innerHTML = rows || `<tr><td colspan="6">${isActivated ? "No license records to show." : "Login ho gaya. Ab key enter karke account activate karo."}</td></tr>`;
+      renderProfileCard(user, username, visibleLicenses, isActivated);
     }
 
-    function renderProfileCard(user, username, licenses) {
+    function renderProfileCard(user, username, licenses, isActivated) {
       const initials = username ? username.slice(0, 2).toUpperCase() : "HX";
-      const latestPlan = licenses && licenses.length ? licenses[0].plan || "custom" : "No licenses yet";
-      const latestStatus = user?.status || "Not checked";
+      const latestPlan = isActivated && licenses && licenses.length ? licenses[0].plan || "custom" : "Awaiting key";
+      const latestStatus = username ? (isActivated ? "Active" : "Awaiting Key") : "Not checked";
 
       els.profileName.textContent = username ? `${username} profile` : "Guest Profile";
-      els.profileMeta.textContent = username ? "Profile image is stored on this device for this customer view." : "Upload a profile image after login. Saved on this device.";
+      els.profileMeta.textContent = username ? (isActivated ? "Profile image is stored on this device for this active customer view." : "Credentials verified. Enter key to fully activate this account.") : "Upload a profile image after login. Saved on this device.";
       els.profileUsernameCard.textContent = username || "Waiting for login";
       els.profileStatusCard.textContent = latestStatus;
       els.profilePlanCard.textContent = latestPlan;
@@ -544,8 +602,8 @@
     }
 
     async function saveAvatarPreview(event) {
-      if (!currentSession) {
-        setPasswordStatus("Login first before adding a profile image.", "warning");
+      if (!currentSession || !currentSession.isActivated) {
+        setPasswordStatus("Login aur key activation ke baad profile image add karo.", "warning");
         event.target.value = "";
         return;
       }
@@ -571,8 +629,8 @@
     }
 
     function resetAvatarPreview() {
-      if (!currentSession) {
-        setPasswordStatus("Login first before resetting a profile image.", "warning");
+      if (!currentSession || !currentSession.isActivated) {
+        setPasswordStatus("Login aur key activation ke baad profile image reset karo.", "warning");
         return;
       }
       localStorage.removeItem(`${AVATAR_PREFIX}${currentSession.username}`);
@@ -581,8 +639,8 @@
     }
 
     async function preparePasswordChange() {
-      if (!currentSession) {
-        setPasswordStatus("Login first to prepare a password change.", "warning");
+      if (!currentSession || !currentSession.isActivated) {
+        setPasswordStatus("Password change ke liye account active hona chahiye.", "warning");
         return;
       }
 
@@ -688,6 +746,20 @@
     function setRequestStatus(message, tone) {
       els.requestStatus.className = `status-banner${tone ? ` ${tone}` : ""}`;
       els.requestStatus.textContent = message;
+    }
+
+    function setActivationState(isVisible, username = "") {
+      els.activationPane.classList.toggle("hide", !isVisible);
+      els.activationUsername.value = isVisible ? username : "";
+      els.activationKey.value = "";
+      if (!isVisible) {
+        setActivationStatus("Login first, then enter your key.", "warning");
+      }
+    }
+
+    function setActivationStatus(message, tone) {
+      els.activationStatus.className = `status-banner${tone ? ` ${tone}` : ""}`;
+      els.activationStatus.textContent = message;
     }
 
     function setPasswordStatus(message, tone) {
