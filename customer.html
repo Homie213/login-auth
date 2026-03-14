@@ -105,7 +105,7 @@
         <div class="panel-header">
           <div>
             <h2>Need Access?</h2>
-            <p class="panel-note">Static GitHub Pages cannot accept unauthenticated writes to the repo JSON, so new access requests are prepared as a shareable message for manual approval.</p>
+            <p class="panel-note">The public site cannot accept unauthenticated direct writes, so new access requests are prepared as a shareable message for manual approval.</p>
           </div>
         </div>
         <div class="field-grid">
@@ -141,6 +141,74 @@
             <p class="panel-note">Appears after a successful login.</p>
           </div>
         </div>
+        <div class="profile-stage">
+          <div class="avatar-card">
+            <div class="avatar-frame">
+              <img id="profileAvatarImage" class="avatar-image hide" alt="Profile picture" />
+              <div id="profileAvatarFallback" class="avatar-fallback">HX</div>
+            </div>
+            <div class="avatar-meta">
+              <strong id="profileName">Guest Profile</strong>
+              <span class="mini-note" id="profileMeta">Upload a profile image after login. Saved on this device.</span>
+            </div>
+            <div class="hero-actions">
+              <label class="btn btn-secondary file-picker">
+                Upload Profile Pic
+                <input id="profileAvatarInput" type="file" accept="image/*" />
+              </label>
+              <button class="btn btn-secondary" id="resetAvatarBtn" type="button">Reset Pic</button>
+            </div>
+            <div class="rect-profile">
+              <div class="rect">
+                <span>Identity</span>
+                <strong id="profileUsernameCard">Waiting for login</strong>
+              </div>
+              <div class="rect">
+                <span>Status</span>
+                <strong id="profileStatusCard">Not checked</strong>
+              </div>
+              <div class="rect">
+                <span>Plan View</span>
+                <strong id="profilePlanCard">No licenses yet</strong>
+              </div>
+              <div class="rect">
+                <span>Security</span>
+                <strong>Private request tools</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="security-card">
+            <div class="panel-header">
+              <div>
+                <h2>Security Tools</h2>
+                <p class="panel-note">Customers can prepare a password change request after logging in. The request is copied privately and can be applied from the private control side.</p>
+              </div>
+            </div>
+            <div class="field-grid two">
+              <div class="field">
+                <label for="currentPassword">Current password</label>
+                <input id="currentPassword" type="password" placeholder="Current password" />
+              </div>
+              <div class="field">
+                <label for="newProfilePassword">New password</label>
+                <input id="newProfilePassword" type="password" placeholder="New password" />
+              </div>
+              <div class="field">
+                <label for="confirmProfilePassword">Confirm password</label>
+                <input id="confirmProfilePassword" type="password" placeholder="Confirm password" />
+              </div>
+              <div class="field">
+                <label for="profileDisplayTag">Display tag</label>
+                <input id="profileDisplayTag" placeholder="Optional display tag" />
+              </div>
+            </div>
+            <div class="hero-actions">
+              <button class="btn btn-primary" id="changePasswordBtn" type="button">Prepare Password Change</button>
+            </div>
+            <div class="status-banner" id="passwordStatus">Login first to unlock profile tools.</div>
+          </div>
+        </div>
         <div class="stat-grid" id="customerSummary"></div>
         <div class="divider"></div>
         <div class="table-wrap">
@@ -164,6 +232,8 @@
         </div>
       </article>
     </section>
+
+    <p class="footer-note">Customer-facing domain target: `https://herax.com/customer.html`</p>
   </div>
 
   <script>
@@ -185,7 +255,9 @@
       }
     };
 
+    const AVATAR_PREFIX = "herax-customer-avatar:";
     let customerState = clone(customerSeed);
+    let currentSession = null;
 
     const els = {
       username: document.getElementById("customerUsername"),
@@ -197,14 +269,32 @@
       requestName: document.getElementById("requestName"),
       requestPlan: document.getElementById("requestPlan"),
       requestNote: document.getElementById("requestNote"),
-      requestStatus: document.getElementById("requestStatus")
+      requestStatus: document.getElementById("requestStatus"),
+      avatarImage: document.getElementById("profileAvatarImage"),
+      avatarFallback: document.getElementById("profileAvatarFallback"),
+      avatarInput: document.getElementById("profileAvatarInput"),
+      resetAvatarBtn: document.getElementById("resetAvatarBtn"),
+      profileName: document.getElementById("profileName"),
+      profileMeta: document.getElementById("profileMeta"),
+      profileUsernameCard: document.getElementById("profileUsernameCard"),
+      profileStatusCard: document.getElementById("profileStatusCard"),
+      profilePlanCard: document.getElementById("profilePlanCard"),
+      currentPassword: document.getElementById("currentPassword"),
+      newProfilePassword: document.getElementById("newProfilePassword"),
+      confirmProfilePassword: document.getElementById("confirmProfilePassword"),
+      profileDisplayTag: document.getElementById("profileDisplayTag"),
+      passwordStatus: document.getElementById("passwordStatus")
     };
 
     document.getElementById("customerLoginBtn").addEventListener("click", loginCustomer);
     document.getElementById("customerReloadBtn").addEventListener("click", loadPublishedData);
     document.getElementById("copyRequestBtn").addEventListener("click", copyAccessRequest);
+    document.getElementById("changePasswordBtn").addEventListener("click", preparePasswordChange);
+    els.avatarInput.addEventListener("change", saveAvatarPreview);
+    els.resetAvatarBtn.addEventListener("click", resetAvatarPreview);
 
     loadPublishedData();
+    renderProfileCard(null, null, []);
 
     async function loadPublishedData() {
       try {
@@ -232,6 +322,7 @@
 
       const user = customerState.users[username];
       if (!user) {
+        currentSession = null;
         setStatus("Account not found. Use the access request form if you are new.", "error");
         renderCustomer([], null, username);
         return;
@@ -239,6 +330,7 @@
 
       const passwordHash = await sha256Base64(`${username}|${password}|HeraxLicensing`);
       if (passwordHash !== user.password_hash) {
+        currentSession = null;
         setStatus("Invalid password for this account.", "error");
         renderCustomer([], user, username);
         return;
@@ -258,8 +350,10 @@
       }
 
       licenses.sort((a, b) => String(b.created || "").localeCompare(String(a.created || "")));
+      currentSession = { username, password, user };
       renderCustomer(licenses, user, username);
       setStatus(`Welcome ${username}. ${licenses.length} license record(s) matched.`, "success");
+      setPasswordStatus("Profile tools unlocked for this session.", "success");
     }
 
     async function copyAccessRequest() {
@@ -318,6 +412,120 @@
       }).join("");
 
       els.table.innerHTML = rows || `<tr><td colspan="6">No license records to show.</td></tr>`;
+      renderProfileCard(user, username, licenses);
+    }
+
+    function renderProfileCard(user, username, licenses) {
+      const initials = username ? username.slice(0, 2).toUpperCase() : "HX";
+      const latestPlan = licenses && licenses.length ? licenses[0].plan || "custom" : "No licenses yet";
+      const latestStatus = user?.status || "Not checked";
+
+      els.profileName.textContent = username ? `${username} profile` : "Guest Profile";
+      els.profileMeta.textContent = username ? "Profile image is stored on this device for this customer view." : "Upload a profile image after login. Saved on this device.";
+      els.profileUsernameCard.textContent = username || "Waiting for login";
+      els.profileStatusCard.textContent = latestStatus;
+      els.profilePlanCard.textContent = latestPlan;
+      els.avatarFallback.textContent = initials;
+      applyAvatar(loadAvatar(username), initials);
+    }
+
+    async function saveAvatarPreview(event) {
+      if (!currentSession) {
+        setPasswordStatus("Login first before adding a profile image.", "warning");
+        event.target.value = "";
+        return;
+      }
+
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        setPasswordStatus("Only image files are allowed.", "error");
+        event.target.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || "");
+        if (!result) return;
+        localStorage.setItem(`${AVATAR_PREFIX}${currentSession.username}`, result);
+        applyAvatar(result, currentSession.username.slice(0, 2).toUpperCase());
+        setPasswordStatus("Profile pic saved on this device.", "success");
+      };
+      reader.readAsDataURL(file);
+      event.target.value = "";
+    }
+
+    function resetAvatarPreview() {
+      if (!currentSession) {
+        setPasswordStatus("Login first before resetting a profile image.", "warning");
+        return;
+      }
+      localStorage.removeItem(`${AVATAR_PREFIX}${currentSession.username}`);
+      applyAvatar("", currentSession.username.slice(0, 2).toUpperCase());
+      setPasswordStatus("Profile pic reset on this device.", "success");
+    }
+
+    async function preparePasswordChange() {
+      if (!currentSession) {
+        setPasswordStatus("Login first to prepare a password change.", "warning");
+        return;
+      }
+
+      const currentPassword = els.currentPassword.value;
+      const nextPassword = els.newProfilePassword.value;
+      const confirmPassword = els.confirmProfilePassword.value;
+      const displayTag = els.profileDisplayTag.value.trim();
+
+      if (!currentPassword || !nextPassword || !confirmPassword) {
+        setPasswordStatus("Fill current password, new password, and confirmation.", "error");
+        return;
+      }
+
+      if (nextPassword !== confirmPassword) {
+        setPasswordStatus("New password and confirmation do not match.", "error");
+        return;
+      }
+
+      const currentHash = await sha256Base64(`${currentSession.username}|${currentPassword}|HeraxLicensing`);
+      if (currentHash !== currentSession.user.password_hash) {
+        setPasswordStatus("Current password is incorrect.", "error");
+        return;
+      }
+
+      const nextHash = await sha256Base64(`${currentSession.username}|${nextPassword}|HeraxLicensing`);
+      const request = [
+        "Herax customer password change request",
+        `Username: ${currentSession.username}`,
+        `Requested at: ${today()}`,
+        `Display tag: ${displayTag || "No display tag"}`,
+        `New password hash: ${nextHash}`
+      ].join("\n");
+
+      try {
+        await navigator.clipboard.writeText(request);
+        setPasswordStatus("Password change request copied. Send it privately to apply the update.", "success");
+      } catch (error) {
+        setPasswordStatus(`Copy failed. Request text:\n${request}`, "warning");
+      }
+    }
+
+    function loadAvatar(username) {
+      if (!username) return "";
+      return localStorage.getItem(`${AVATAR_PREFIX}${username}`) || "";
+    }
+
+    function applyAvatar(dataUrl, initials) {
+      if (dataUrl) {
+        els.avatarImage.src = dataUrl;
+        els.avatarImage.classList.remove("hide");
+        els.avatarFallback.classList.add("hide");
+      } else {
+        els.avatarImage.removeAttribute("src");
+        els.avatarImage.classList.add("hide");
+        els.avatarFallback.classList.remove("hide");
+        els.avatarFallback.textContent = initials || "HX";
+      }
     }
 
     function effectiveStatus(license) {
@@ -366,6 +574,11 @@
     function setRequestStatus(message, tone) {
       els.requestStatus.className = `status-banner${tone ? ` ${tone}` : ""}`;
       els.requestStatus.textContent = message;
+    }
+
+    function setPasswordStatus(message, tone) {
+      els.passwordStatus.className = `status-banner${tone ? ` ${tone}` : ""}`;
+      els.passwordStatus.textContent = message;
     }
 
     function today() {
