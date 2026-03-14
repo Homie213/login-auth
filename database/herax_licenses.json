@@ -1,36 +1,6 @@
 {
-  "users": {
-    "customer_demo": {
-      "password_hash": "YxaFN/ej8L4JIpnWavB5apTLi1vjBpp3BCIDCsFqAwE=",
-      "role": "user",
-      "created": "2026-03-14",
-      "status": "active",
-      "notes": "Demo profile for first-run testing."
-    }
-  },
-  "licenses": {
-    "NOVA-7XK2P9-Q4M8RD": {
-      "username": "customer_demo",
-      "plan": "30days",
-      "status": "active",
-      "expiry": "2026-04-13",
-      "created": "2026-03-14",
-      "revenue": 500,
-      "notes": "Demo active license"
-    }
-  },
-  "stats": {
-    "total_users": 1,
-    "total_keys": 1,
-    "active_keys": 1,
-    "paused_keys": 0,
-    "revoked_keys": 0,
-    "expired_keys": 0,
-    "revenue": 500
-  },
-  "meta": {
-    "schema_version": 3,
-    "updated_at": "2026-03-14",
-    "note": "Public customer database feed."
+  "sasan": {
+    "password_hash": "08e92920432c3ffb16c1ebc7194d39ee",
+    "payment_status": "approved"
   }
 }
