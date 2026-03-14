@@ -76,27 +76,72 @@
       <article class="panel">
         <div class="panel-header">
           <div>
-            <h2>Customer Login</h2>
-            <p class="panel-note">Use the same username and password assigned to your account.</p>
+            <h2>Customer Access</h2>
+            <p class="panel-note">Switch between login and register. Login checks an active account, while register prepares a clean signup request.</p>
           </div>
         </div>
-        <div class="field-grid">
-          <div class="field">
-            <label for="customerUsername">Username</label>
-            <input id="customerUsername" placeholder="customer_demo" />
+        <div class="auth-toggle">
+          <button class="active" id="showLoginPaneBtn" type="button">Login</button>
+          <button id="showRegisterPaneBtn" type="button">Register</button>
+        </div>
+        <div class="auth-pane" id="loginPane">
+          <div class="field-grid">
+            <div class="field">
+              <label for="customerUsername">Username</label>
+              <input id="customerUsername" placeholder="customer_demo" />
+            </div>
+            <div class="field">
+              <label for="customerPassword">Password</label>
+              <input id="customerPassword" type="password" placeholder="Enter password" />
+            </div>
+            <div class="field">
+              <label for="customerLicenseKey">License key (optional)</label>
+              <input id="customerLicenseKey" placeholder="Paste a specific key to check" />
+            </div>
           </div>
-          <div class="field">
-            <label for="customerPassword">Password</label>
-            <input id="customerPassword" type="password" placeholder="Enter password" />
-          </div>
-          <div class="field">
-            <label for="customerLicenseKey">License key (optional)</label>
-            <input id="customerLicenseKey" placeholder="Paste a specific key to check" />
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="customerLoginBtn" type="button">Login</button>
+            <button class="btn btn-secondary" id="customerReloadBtn" type="button">Reload Published Data</button>
           </div>
         </div>
-        <div class="hero-actions">
-          <button class="btn btn-primary" id="customerLoginBtn" type="button">Check Account</button>
-          <button class="btn btn-secondary" id="customerReloadBtn" type="button">Reload Published Data</button>
+        <div class="auth-pane hide" id="registerPane">
+          <div class="field-grid two">
+            <div class="field">
+              <label for="registerUsername">Desired username</label>
+              <input id="registerUsername" placeholder="new_customer" />
+            </div>
+            <div class="field">
+              <label for="registerPlan">Plan</label>
+              <select id="registerPlan">
+                <option value="30days">30 Days</option>
+                <option value="lifetime">Lifetime</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="registerPassword">Password</label>
+              <input id="registerPassword" type="password" placeholder="Choose password" />
+            </div>
+            <div class="field">
+              <label for="registerConfirmPassword">Confirm password</label>
+              <input id="registerConfirmPassword" type="password" placeholder="Confirm password" />
+            </div>
+            <div class="field">
+              <label for="registerContact">Contact</label>
+              <input id="registerContact" placeholder="Telegram or WhatsApp" />
+            </div>
+            <div class="field">
+              <label for="registerTag">Display tag</label>
+              <input id="registerTag" placeholder="Optional profile tag" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="registerNote">Signup note</label>
+            <textarea id="registerNote" placeholder="Payment note, referral, preferred package, or anything important."></textarea>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="registerRequestBtn" type="button">Register</button>
+          </div>
         </div>
         <div class="status-banner" id="customerStatus">Ready.</div>
       </article>
@@ -263,6 +308,10 @@
       username: document.getElementById("customerUsername"),
       password: document.getElementById("customerPassword"),
       licenseKey: document.getElementById("customerLicenseKey"),
+      loginPane: document.getElementById("loginPane"),
+      registerPane: document.getElementById("registerPane"),
+      showLoginPaneBtn: document.getElementById("showLoginPaneBtn"),
+      showRegisterPaneBtn: document.getElementById("showRegisterPaneBtn"),
       status: document.getElementById("customerStatus"),
       summary: document.getElementById("customerSummary"),
       table: document.getElementById("customerLicenseTable"),
@@ -283,18 +332,29 @@
       newProfilePassword: document.getElementById("newProfilePassword"),
       confirmProfilePassword: document.getElementById("confirmProfilePassword"),
       profileDisplayTag: document.getElementById("profileDisplayTag"),
-      passwordStatus: document.getElementById("passwordStatus")
+      passwordStatus: document.getElementById("passwordStatus"),
+      registerUsername: document.getElementById("registerUsername"),
+      registerPlan: document.getElementById("registerPlan"),
+      registerPassword: document.getElementById("registerPassword"),
+      registerConfirmPassword: document.getElementById("registerConfirmPassword"),
+      registerContact: document.getElementById("registerContact"),
+      registerTag: document.getElementById("registerTag"),
+      registerNote: document.getElementById("registerNote")
     };
 
     document.getElementById("customerLoginBtn").addEventListener("click", loginCustomer);
     document.getElementById("customerReloadBtn").addEventListener("click", loadPublishedData);
     document.getElementById("copyRequestBtn").addEventListener("click", copyAccessRequest);
     document.getElementById("changePasswordBtn").addEventListener("click", preparePasswordChange);
+    document.getElementById("registerRequestBtn").addEventListener("click", registerCustomer);
     els.avatarInput.addEventListener("change", saveAvatarPreview);
     els.resetAvatarBtn.addEventListener("click", resetAvatarPreview);
+    els.showLoginPaneBtn.addEventListener("click", () => switchAuthPane("login"));
+    els.showRegisterPaneBtn.addEventListener("click", () => switchAuthPane("register"));
 
     loadPublishedData();
     renderProfileCard(null, null, []);
+    switchAuthPane("login");
 
     async function loadPublishedData() {
       try {
@@ -377,6 +437,60 @@
       } catch (error) {
         setRequestStatus(`Copy failed. Request text:\n${message}`, "warning");
       }
+    }
+
+    async function registerCustomer() {
+      const username = els.registerUsername.value.trim();
+      const plan = els.registerPlan.value;
+      const password = els.registerPassword.value;
+      const confirmPassword = els.registerConfirmPassword.value;
+      const contact = els.registerContact.value.trim();
+      const displayTag = els.registerTag.value.trim();
+      const note = els.registerNote.value.trim();
+
+      if (!username || !password || !confirmPassword) {
+        setStatus("Register form me username aur password required hain.", "error");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setStatus("Register password aur confirm password match nahi kar rahe.", "error");
+        return;
+      }
+
+      if (customerState.users[username]) {
+        setStatus("Ye username already registered hai. Login try karo ya dusra username lo.", "warning");
+        switchAuthPane("login");
+        els.username.value = username;
+        return;
+      }
+
+      const passwordHash = await sha256Base64(`${username}|${password}|HeraxLicensing`);
+      const message = [
+        "New Herax customer registration",
+        `Username: ${username}`,
+        `Plan: ${plan}`,
+        `Contact: ${contact || "No contact shared"}`,
+        `Display tag: ${displayTag || "No display tag"}`,
+        `Requested at: ${today()}`,
+        `Password hash: ${passwordHash}`,
+        `Notes: ${note || "No notes added"}`
+      ].join("\n");
+
+      try {
+        await navigator.clipboard.writeText(message);
+        setStatus("Register request copied. Private side par isse account create kiya ja sakta hai.", "success");
+      } catch (error) {
+        setStatus(`Register copy failed. Request text:\n${message}`, "warning");
+      }
+    }
+
+    function switchAuthPane(mode) {
+      const isLogin = mode === "login";
+      els.loginPane.classList.toggle("hide", !isLogin);
+      els.registerPane.classList.toggle("hide", isLogin);
+      els.showLoginPaneBtn.classList.toggle("active", isLogin);
+      els.showRegisterPaneBtn.classList.toggle("active", !isLogin);
     }
 
     function renderCustomer(licenses, user, username) {
